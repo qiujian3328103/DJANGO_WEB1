@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Django DataTables Example</title>
+    <!-- DataTables CSS -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- DataTables JavaScript -->
+<script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <!-- Include the DataTables CSS and JavaScript -->
+    <!-- Use either Option 1 (CDN) or Option 2 (Local) based on your setup -->
+</head>
+<body>
+    <table id="myTable">
+        <thead>
+            <tr>
+                <th>
+                    <button class="btn-toggle-expand-all">Expand All</button> <!-- Dropdown toggle button -->
+                </th>
+                <th>Name</th>
+                <th>Age</th>
+                <th>Action</th>  <!-- New column for the button -->
+            </tr>
+        </thead>
+        <tbody>
+            {% for person in data %}
+                <tr>
+                    <td>
+                        <button class="btn-toggle-expand-row">Expand</button> <!-- Dropdown button for each row -->
+                    </td>
+                    <td>{{ person.name }}</td>
+                    <td>{{ person.age }}</td>
+                    <td><button class="btn-show-name" data-name="{{ person.name }}">Show Name</button></td> <!-- Button for each row -->
+                </tr>
+                <tr class="hidden-row">
+                    <td colspan="4">
+                        <!-- Content for expanded row -->
+                        <p>Some additional details for {{ person.name }}.</p>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <script>
+        // Initialize DataTable
+        $(document).ready(function() {
+            $('#myTable').DataTable();
+
+            // Handle button click event to expand/collapse individual rows
+            $('.btn-toggle-expand-row').click(function() {
+                $(this).closest('tr').next('.hidden-row').toggle();
+            });
+
+            // Handle button click event to expand/collapse all rows
+            $('.btn-toggle-expand-all').click(function() {
+                $('.hidden-row').toggle();
+            });
+
+            // Handle button click event
+            $('.btn-show-name').click(function() {
+                var name = $(this).data('name');
+                alert('Name: ' + name);
+            });
+        });
+    </script>
+</body>
+</html>

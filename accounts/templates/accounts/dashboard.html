@@ -1,0 +1,24 @@
+{% comment %} {% extends 'accounts/main.html' %}
+
+{% block content %}
+    <h1>Dashboard</h1>
+    <h2>test</h2>
+    <div id="plotly_plot">{{ plot_html|safe }}</div>
+
+        <!-- Display the hover data here -->
+    <div id="hover_info">Hover Data: N/A</div>
+{% endblock content %}
+     {% endcomment %}
+<!-- your_template.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <script src="https://cdn.bokeh.org/bokeh/release/bokeh-2.4.3.min.js"></script>
+    <link href="https://cdn.bokeh.org/bokeh/release/bokeh-2.4.3.min.css" rel="stylesheet" type="text/css">
+    {{ script|safe }}
+ </head>
+ <body>
+     {{ div | safe }}
+</body>
+</html>
