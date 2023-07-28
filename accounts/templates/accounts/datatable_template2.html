@@ -10,6 +10,8 @@
         /* Styling for the toggle icons */
         .toggle-icon {
             cursor: pointer;
+            padding: 5px;
+            border-radius: 50%; /* To create a circular icon background */
         }
 
         /* Custom style for the text area row */
@@ -49,7 +51,7 @@
                 "ajax": "{% url 'data_json' %}",
                 "columns": [
                     {"data": null, "orderable": false, "render": function(data, type, row) {
-                        return '<a href="javascript:void(0);" class="toggle-row"><i class="toggle-icon fas fa-plus"></i></a>';
+                        return '<a href="javascript:void(0);" class="toggle-row"><i class="toggle-icon fa-solid fa-square-caret-down fa-rotate-270 fa-lg" style="color: green"></i></a>';
                     }},
                     {"data": "username"},
                     {"data": "email"},
@@ -69,15 +71,17 @@
                     // If the row is already expanded, close it
                     row.child.hide();
                     tr.removeClass('shown');
-                    toggleIcon.removeClass('fa-minus'); // Set the plus icon when collapsed
-                    toggleIcon.addClass('fa-plus'); // Add the plus class
+                    toggleIcon.removeClass('fa-regular fa-solid fa-square-caret-down fa-lg'); // Set the plus icon when collapsed
+                    toggleIcon.addClass('fa-regular fa-solid fa-square-caret-down fa-lg fa-rotate-270'); // Add the plus class
+                    toggleIcon.css('color', 'green'); //styling the icon to red 
                     textAreaRow.removeClass('expanded'); // Hide the text area row
                 } else {
                     // Otherwise, open the row to show the text area
                     row.child('<div class="child-row">' + row.data().text_area + '</div>').show();
                     tr.addClass('shown');
-                    toggleIcon.removeClass('fa-plus'); // Set the minus icon when expanded
-                    toggleIcon.addClass('fa-minus'); // Add the minus class
+                    toggleIcon.removeClass('fa-regular fa-solid fa-square-caret-down fa-lg fa-rotate-270'); // Set the minus icon when expanded
+                    toggleIcon.addClass('fa-regular fa-solid fa-square-caret-down fa-lg'); // Add the minus class
+                    toggleIcon.css('color', 'red'); //styling the icon to red 
                     textAreaRow.addClass('expanded'); // Show the text area row
                 }
             });
