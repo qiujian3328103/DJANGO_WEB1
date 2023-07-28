@@ -136,11 +136,9 @@ def netinfo(request):  # ajax的url
     data_dic['data'] = data_list  # 格式一定要符合官网的json格式，否则会出现一系列错误
     return HttpResponse(json.dumps(data_dic))
 # https://blog.csdn.net/weixin_42289273/article/details/109408689
-
-
-# app_name/views.py
-# from django.shortcuts import render
-# from app_name.models import Person
+# https://www.twblogs.net/a/5c10ec5abd9eee5e40bb1105
+# add button in front of the table 
+# https://stackoverflow.com/questions/52478489/bootstrap-4-collapse-accordion-table-in-django
 
 def datatable_view(request):
     data = Person.objects.all()

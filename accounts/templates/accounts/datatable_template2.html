@@ -5,16 +5,35 @@
 <head>
     <title>Form Data DataTable</title>
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* Styling for the toggle icons */
+        .toggle-icon {
+            cursor: pointer;
+        }
+
+        /* Custom style for the text area row */
+        .text-area-row {
+            display: none;
+            background-color: #f0f0f0;
+        }
+
+        /* Show the text area row when it's expanded */
+        .text-area-row.expanded {
+            display: table-row;
+        }
+    </style>
 </head>
 <body>
     <h1>Form Data DataTable</h1>
     <table id="data-table" class="display">
         <thead>
             <tr>
+                <th>Toggle</th>
                 <th>Username</th>
                 <th>Email</th>
                 <th>Hyperlink</th>
-                <th>Text Area</th>
+                <!-- Remove the Text Area table header -->
             </tr>
         </thead>
         <tbody>
@@ -26,14 +45,41 @@
     <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
     <script>
         $(document).ready(function() {
-            $('#data-table').DataTable({
+            var dataTable = $('#data-table').DataTable({
                 "ajax": "{% url 'data_json' %}",
                 "columns": [
+                    {"data": null, "orderable": false, "render": function(data, type, row) {
+                        return '<a href="javascript:void(0);" class="toggle-row"><i class="toggle-icon fas fa-plus"></i></a>';
+                    }},
                     {"data": "username"},
                     {"data": "email"},
                     {"data": "hyperlink"},
-                    {"data": "text_area"}
-                ]
+                    {"data": "text_area", "visible": false}, // Hide the Text Area column initially
+                ],
+            });
+
+            $('#data-table tbody').on('click', 'td .toggle-row', function () {
+                var tr = $(this).closest('tr');
+                var row = dataTable.row(tr);
+                console.log(tr, row);
+                var textAreaRow = tr.next('.text-area-row');
+                var toggleIcon = $(this).find('.toggle-icon');
+
+                if (row.child.isShown()) {
+                    // If the row is already expanded, close it
+                    row.child.hide();
+                    tr.removeClass('shown');
+                    toggleIcon.removeClass('fa-minus'); // Set the plus icon when collapsed
+                    toggleIcon.addClass('fa-plus'); // Add the plus class
+                    textAreaRow.removeClass('expanded'); // Hide the text area row
+                } else {
+                    // Otherwise, open the row to show the text area
+                    row.child('<div class="child-row">' + row.data().text_area + '</div>').show();
+                    tr.addClass('shown');
+                    toggleIcon.removeClass('fa-plus'); // Set the minus icon when expanded
+                    toggleIcon.addClass('fa-minus'); // Add the minus class
+                    textAreaRow.addClass('expanded'); // Show the text area row
+                }
             });
         });
     </script>
