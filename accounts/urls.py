@@ -11,5 +11,7 @@ urlpatterns = [
     path('datatable/', views.datatable_view, name='datatable'),
     path('images/<str:image_name>/', views.serve_image, name='serve_image'),
     # Add other URL patterns if you have any
-
+    path('form/', views.form_view, name='form'),
+    path('datatable2/', views.datatable_view_form, name='datatable-view2'),
+    path('data_json/', views.get_form_data_json, name='data_json'),
 ]

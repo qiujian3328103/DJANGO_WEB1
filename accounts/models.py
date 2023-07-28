@@ -28,3 +28,13 @@ class Commodity(models.Model):
  
     class Meta:
         db_table = "commodity"
+
+
+class FormData(models.Model):
+    username = models.CharField(max_length=100)
+    email = models.EmailField()
+    hyperlink = models.URLField()
+    text_area = models.TextField()
+
+    def __str__(self):
+        return self.username

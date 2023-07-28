@@ -1,0 +1,41 @@
+<!-- myapp/templates/datatable_template.html -->
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Form Data DataTable</title>
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+</head>
+<body>
+    <h1>Form Data DataTable</h1>
+    <table id="data-table" class="display">
+        <thead>
+            <tr>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Hyperlink</th>
+                <th>Text Area</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- DataTable rows will be added here dynamically -->
+        </tbody>
+    </table>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#data-table').DataTable({
+                "ajax": "{% url 'data_json' %}",
+                "columns": [
+                    {"data": "username"},
+                    {"data": "email"},
+                    {"data": "hyperlink"},
+                    {"data": "text_area"}
+                ]
+            });
+        });
+    </script>
+</body>
+</html>

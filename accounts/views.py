@@ -1,7 +1,6 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import HttpResponse
 import plotly.graph_objects as go
-from django.shortcuts import render
 from plotly.offline import plot
 from bokeh.plotting import figure
 from bokeh.embed import components
@@ -20,6 +19,9 @@ import os
 from .models import Person, Commodity
 from .tables import PersonTable
 import json 
+from .forms import FormDataForm
+from django.http import JsonResponse
+from .models import FormData
 # def home(request):
 #     return render(request,'accounts/dashboard.html')
 
@@ -143,3 +145,21 @@ def netinfo(request):  # ajax的url
 def datatable_view(request):
     data = Person.objects.all()
     return render(request, 'accounts/datatable_template.html', {'data': data})
+
+def form_view(request):
+    if request.method == 'POST':
+        form = FormDataForm(request.POST)
+        if form.is_valid():
+            form.save()  # Save the form data to the database
+            return redirect('form')  # Redirect back to the form page or a different URL as needed
+    else:
+        form = FormDataForm()
+
+    return render(request, 'accounts/form_template.html', {'form': form})
+
+def get_form_data_json(request):
+    data = FormData.objects.values('username', 'email', 'hyperlink', 'text_area')
+    return JsonResponse({'data': list(data)})
+
+def datatable_view_form(request):
+    return render(request, 'accounts/datatable_template2.html')
