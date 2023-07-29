@@ -20,6 +20,9 @@ class FormDataForm(forms.ModelForm):
             ),
             Row(Column('hyperlink')),
             Row(Column('text_area')),
-            Row(Column(Submit('submit', 'Submit'), css_class='mt-4')),
-            Row(Column(Submit('cancel', 'Cancel', css_class='btn-secondary'), css_class='mt-4'))
+            Row(
+            Column(Submit('submit', 'Submit'), css_class='mt-4'),
+            Column(Submit('cancel', 'Cancel', css_class='btn-secondary; mt-4')),
+            css_class='for-group row mt-4'
+            ),
         )

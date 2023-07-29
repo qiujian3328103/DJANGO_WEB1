@@ -16,17 +16,17 @@
 
     {% if show_modal_success %}
     <script>
-        $(document).ready(function() {
+        window.onload = function() {
             $('#uploadModal').modal('show');
-        });
+        };
     </script>
     {% endif %}
 
     {% if show_modal_error %}
     <script>
-        $(document).ready(function() {
+        window.onload = function() {
             $('#errorModal').modal('show');
-        });
+        };
     </script>
     {% endif %}
 

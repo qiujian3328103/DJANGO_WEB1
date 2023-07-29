@@ -144,20 +144,87 @@ def datatable_view(request):
     data = Person.objects.all()
     return render(request, 'accounts/datatable_template.html', {'data': data})
 
-def form_view(request):
-    if request.method == 'POST':
-        form = FormDataForm(request.POST)
-        if form.is_valid():
-            form.save()  # Save the form data to the database
-            return redirect('form')  # Redirect back to the form page or a different URL as needed
-    else:
-        form = FormDataForm()
-
-    return render(request, 'accounts/form_template.html', {'form': form})
 
 def get_form_data_json(request):
-    data = FormData.objects.values('username', 'email', 'hyperlink', 'text_area')
+    data = FormData.objects.values('id', 'username', 'email', 'hyperlink', 'text_area')
     return JsonResponse({'data': list(data)})
 
 def datatable_view_form(request):
     return render(request, 'accounts/datatable_template2.html')
+
+
+# def form_view(request):
+#     """_summary_
+#     add a new username, if the username is exist, update the rest information 
+#     else add the new username.
+#     Args:
+#         request (_type_): _description_
+
+#     Returns:
+#         _type_: _description_
+#     """
+#     if request.method == 'POST':
+#         form = FormDataForm(request.POST)
+#         if form.is_valid():
+#             username = form.cleaned_data['username']
+#             email = form.cleaned_data['email']
+#             hyperlink = form.cleaned_data['hyperlink']
+#             text_area = form.cleaned_data['text_area']
+
+#             # Check if the username already exists in the database
+#             existing_entry = FormData.objects.filter(username=username).first()
+
+#             if existing_entry:
+#                 # If the username exists, update the other fields
+#                 existing_entry.email = email
+#                 existing_entry.hyperlink = hyperlink
+#                 existing_entry.text_area = text_area
+#                 existing_entry.save()
+#             else:
+#                 # If the username does not exist, create a new entry
+#                 new_entry = FormData(username=username, email=email, hyperlink=hyperlink, text_area=text_area)
+#                 new_entry.save()
+
+#             return redirect('form')  # Redirect back to the form page or a different URL as needed
+
+#     else:
+#         form = FormDataForm()
+
+#     return render(request, 'accounts/form_template.html', {'form': form})
+
+
+from django.shortcuts import render, redirect, get_object_or_404
+from .forms import FormDataForm
+from .models import FormData
+
+def form_view(request, entry_id=None):
+    """_summary_
+    Add a new username or update the rest information if the username already exists.
+    Args:
+        request (_type_): _description_
+        entry_id (int, optional): The ID of the entry to edit. Defaults to None.
+
+    Returns:
+        _type_: _description_
+    """
+    show_modal_success = False
+
+    if entry_id:
+        existing_entry = get_object_or_404(FormData, id=entry_id)
+        if request.method == 'POST':
+            form = FormDataForm(request.POST, instance=existing_entry)
+            if form.is_valid():
+                form.save()
+                show_modal_success = True
+        else:
+            form = FormDataForm(instance=existing_entry)
+    else:
+        if request.method == 'POST':
+            form = FormDataForm(request.POST)
+            if form.is_valid():
+                form.save()
+                show_modal_success = True
+        else:
+            form = FormDataForm()
+
+    return render(request, 'accounts/form_template.html', {'form': form, 'show_modal_success': show_modal_success})

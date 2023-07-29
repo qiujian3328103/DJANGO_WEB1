@@ -1,4 +1,3 @@
-<!-- myapp/templates/datatable_template.html -->
 {% load static %}
 <!DOCTYPE html>
 <html>
@@ -24,30 +23,45 @@
         .text-area-row.expanded {
             display: table-row;
         }
+
+        /* Align buttons to center */
+        .center {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
     </style>
 </head>
 <body>
     <h1>Form Data DataTable</h1>
-    <table id="data-table" class="display">
+    <a class="btn btn-success" style="float:left;margin-right:20px;" href="https://codepen.io/collection/XKgNLN/" target="_blank">Add New Data</a>
+    <br>
+    <!--class in the table adjust the table size -->
+    <table id="data-table" class="table table-striped table-bordered" cellspacing="0" width="100%">
         <thead>
             <tr>
                 <th>Toggle</th>
                 <th>Username</th>
                 <th>Email</th>
                 <th>Hyperlink</th>
-                <!-- Remove the Text Area table header -->
+                <th>Progress</th>
+                <th style="width: 150px;">Widget</th>  <!-- New column for buttons -->
+                <th>Text Area</th>  <!-- Remove the Text Area table header -->
             </tr>
         </thead>
         <tbody>
             <!-- DataTable rows will be added here dynamically -->
         </tbody>
     </table>
-
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!--The JS position and order are very important!!!! -->
+    <!--TO get the progress bar render in the table, you must have the percentageBar.js -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
     <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/progressbar.js/1.1.0/progressbar.min.js"></script>
     <script>
         $(document).ready(function() {
             var dataTable = $('#data-table').DataTable({
+                "autoWidth": true,
                 "ajax": "{% url 'data_json' %}",
                 "columns": [
                     {"data": null, "orderable": false, "render": function(data, type, row) {
@@ -56,14 +70,76 @@
                     {"data": "username"},
                     {"data": "email"},
                     {"data": "hyperlink"},
+                    {"data": "progress", "render": function (data, type, row) {
+                        // Generate a random percentage value for the progress column (from 0% to 100%)
+                        var randomPercentage = Math.floor(Math.random() * 101);
+                        return randomPercentage;
+                    }},
+                    {"data": null, "render": function(data, type, row) {  // New column for buttons
+                        return '<div class="center"><a href="#" class="edit-button"><i class="fas fa-edit"></i></a> <a href="#" class="delete-button"><i class="fas fa-trash-alt"></i></a></div>';
+                    }},
                     {"data": "text_area", "visible": false}, // Hide the Text Area column initially
                 ],
+                // table setting 
+                "responsive": true,
+                "initComplete": function (settings) {
+                    // Render progress bars after DataTable is drawn
+                    renderProgressBars();
+                }
             });
 
-            $('#data-table tbody').on('click', 'td .toggle-row', function () {
+
+            function renderProgressBars() {
+                dataTable.rows().every(function () {
+                    var row = this.data();
+                    // console.log(row);
+                    //this.invalidate(); 
+                    var percentage = parseInt( Math.floor(Math.random() * 101));
+                    var progressBarContainer = document.createElement("div");
+                    progressBarContainer.setAttribute("id", "progress-bar-" + row.id);
+                    progressBarContainer.style.width = "100px";
+                    progressBarContainer.style.height = "20px";
+    
+                    // Append the progress bar container to the cell
+                    var cell = this.node().querySelector('td:nth-child(5)');
+                    cell.innerHTML = ''; // Clear cell content
+                    cell.appendChild(progressBarContainer);
+    
+                    // Use progressbar.js to render the progress bar
+                    var progressBar = new ProgressBar.Line(progressBarContainer, {
+                        strokeWidth: 4,
+                        easing: 'easeInOut',
+                        duration: 1400,
+                        color: '#007bff',
+                        trailColor: '#f2f2f2',
+                        trailWidth: 4,
+                        svgStyle: {width: '100%', height: '100%'},
+                        //text: {
+                        //    value: percentage + '%',
+                        //    style: {textAlign: 'center'}
+                        //},
+                        step: function(state, bar) {
+                            bar.setText((bar.value() * 100).toFixed(0) + '%');
+                        }
+                    });
+    
+                    progressBar.animate(percentage / 100); // Set progress percentage
+                });
+            }
+    
+            // Event listener for DataTable draw event
+            dataTable.on('draw.dt', function () {
+                renderProgressBars(); // Render progress bars after each draw event
+            });
+    
+            // Initial rendering of progress bars
+            renderProgressBars();
+
+
+            // Toggle button click handler
+            $('#data-table tbody').on('click', '.toggle-row', function () {
                 var tr = $(this).closest('tr');
                 var row = dataTable.row(tr);
-                console.log(tr, row);
                 var textAreaRow = tr.next('.text-area-row');
                 var toggleIcon = $(this).find('.toggle-icon');
 
@@ -71,21 +147,70 @@
                     // If the row is already expanded, close it
                     row.child.hide();
                     tr.removeClass('shown');
-                    toggleIcon.removeClass('fa-regular fa-solid fa-square-caret-down fa-lg'); // Set the plus icon when collapsed
-                    toggleIcon.addClass('fa-regular fa-solid fa-square-caret-down fa-lg fa-rotate-270'); // Add the plus class
-                    toggleIcon.css('color', 'green'); //styling the icon to red 
-                    textAreaRow.removeClass('expanded'); // Hide the text area row
+                    toggleIcon.removeClass('fa-regular fa-solid fa-square-caret-down fa-lg');
+                    toggleIcon.addClass('fa-solid fa-square-caret-down fa-rotate-270 fa-lg');
+                    toggleIcon.css('color', 'green');
+                    textAreaRow.removeClass('expanded');
                 } else {
                     // Otherwise, open the row to show the text area
-                    row.child('<div class="child-row">' + row.data().text_area + '</div>').show();
+                    var childHtml = '<div class="child-row">';
+                        childHtml += '<table class="child-table">';
+                        $.each(row.data(), function(key, value) {
+                            if (key === 'text_area') {
+                                childHtml += '<tr>' +
+                                             '<td><strong>' + key + '</strong></td>' +
+                                             '<td>' + value + '</td>' +
+                                             '</tr>';
+                            }
+                        });
+                        childHtml += '</table>';
+                        childHtml += '</div>';
+
+                    // loop every single item and columns method in each data
+                    // var childHtml = '<div class="child-row">';
+                    // $.each(row.data(), function(key, value) {
+                    //    childHtml += '<div class="row">' +
+                    //                    '<div class="col-4"><strong>' + key + '</strong></div>' +
+                    //                    '<div class="col-8">' + value + '</div>' +
+                    //                    '</div>';
+                    //});
+                    console.log(childHtml);
+                    row.child(childHtml).show();
+                    //row.child('<div class="child-row">' + row.data().text_area + '</div>').show();
                     tr.addClass('shown');
-                    toggleIcon.removeClass('fa-regular fa-solid fa-square-caret-down fa-lg fa-rotate-270'); // Set the minus icon when expanded
-                    toggleIcon.addClass('fa-regular fa-solid fa-square-caret-down fa-lg'); // Add the minus class
-                    toggleIcon.css('color', 'red'); //styling the icon to red 
-                    textAreaRow.addClass('expanded'); // Show the text area row
+                    toggleIcon.removeClass('fa-regular fa-solid fa-square-caret-down fa-lg fa-rotate-270');
+                    toggleIcon.addClass('fa-solid fa-square-caret-down fa-lg');
+                    toggleIcon.css('color', 'red');
+                    textAreaRow.addClass('expanded');
                 }
             });
+
+            // Edit and Delete button click handlers (replace "#" with your actual URLs)
+            $('#data-table tbody').on('click', '.edit-button', function () {
+                var data = dataTable.row($(this).closest('tr')).data();
+                console.log('Delete:', data.username);
+                
+                var entryId = data.id;  // Assuming there's an 'id' field in the model
+                // Redirect to the edit form page with the entry_id
+                window.location.href = "{% url 'edit_form' 0 %}".replace('0', entryId);
+            });
+            
+
+            $('#data-table tbody').on('click', '.delete-button', function () {
+                var data = dataTable.row($(this).closest('tr')).data();
+                // Handle the delete action, e.g., show confirmation modal and delete on confirmation
+                console.log('Delete:', data.username);
+                console.log('test', data.id);
+            });
+
+
+
+            
+
+
         });
     </script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
 </body>
 </html>

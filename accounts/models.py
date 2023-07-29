@@ -31,6 +31,7 @@ class Commodity(models.Model):
 
 
 class FormData(models.Model):
+    id = models.AutoField(primary_key=True)
     username = models.CharField(max_length=100)
     email = models.EmailField()
     hyperlink = models.URLField()
