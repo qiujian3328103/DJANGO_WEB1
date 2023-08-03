@@ -15,5 +15,5 @@ urlpatterns = [
     path('form/<int:entry_id>/', views.form_view, name='edit_form'),
     path('datatable2/', views.datatable_view_form, name='datatable-view2'),
     path('data_json/', views.get_form_data_json, name='data_json'),
-    
+    path('delete_entry/', views.delete_entry, name='delete_entry'),
 ]

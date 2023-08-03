@@ -228,3 +228,17 @@ def form_view(request, entry_id=None):
             form = FormDataForm()
 
     return render(request, 'accounts/form_template.html', {'form': form, 'show_modal_success': show_modal_success})
+
+
+def delete_entry(request):
+    if request.method == 'POST':
+        entry_id = request.POST.get('entry_id')
+        try:
+            # Delete the entry from the database using the entry_id
+            entry = FormData.objects.get(id=entry_id)
+            entry.delete()
+            return JsonResponse({'status': 'success'})
+        except FormData.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'Entry not found.'})
+
+    return JsonResponse({'status': 'error', 'message': 'Invalid request method.'})
