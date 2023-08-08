@@ -38,11 +38,16 @@
         var plotTypeSelect = document.getElementById('plotTypeSelect');
         var startDatePicker = document.getElementById('startDatePicker');
         var endDatePicker = document.getElementById('endDatePicker');
-
+        var chart;  // Variable to store the Highcharts chart instance
         function createChart(xLabels, yValues) {
+                        // Destroy previous chart instance if exists
+            if (chart) {
+                chart.destroy();
+            };
+
             Highcharts.chart('chartContainer', {
                 chart: {
-                    type: 'bar'
+                    type:  plotTypeSelect.value
                 },
                 title: {
                     text: 'Average Yield Data by Month'
@@ -70,13 +75,20 @@
             var startDate = startDatePicker.value;
             var endDate = endDatePicker.value;
 
-            fetch(`/get_data/?plot_type=bar&start_date=${startDate}&end_date=${endDate}`)
+
+            console.log(startDate);
+            console.log(endDate);
+
+            fetch(`/get_data_highchart/?plot_type=${plotTypeSelect.value}&start_date=${startDate}&end_date=${endDate}`)
                 .then(response => response.json())
                 .then(data => {
+                    console.log(data.y_values);
                     createChart(data.x_labels, data.y_values);
+                    
                 });
         }
 
+        plotTypeSelect.addEventListener('change', updateChart);
         startDatePicker.addEventListener('change', updateChart);
         endDatePicker.addEventListener('change', updateChart);
 

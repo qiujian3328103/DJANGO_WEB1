@@ -342,16 +342,26 @@ def get_data(request):
 
 
 def highchart_plot(request):
-        # Calculate default start and end dates
-    current_date = datetime.datetime.now().date()
-    default_end_date = current_date.strftime('%Y-%m-%d')
-    default_start_date = (current_date - datetime.timedelta(days=14)).strftime('%Y-%m-%d')
+    data = YieldData.objects.all()
+
+    # Convert data to a Pandas DataFrame
+    df = pd.DataFrame(list(data.values()))
+
+    # Convert the 'date' column to a datetime object
+    df['date'] = pd.to_datetime(df['date'])
+
+    # Add a new column 'current_date' in "Month-Y" format
+    df['current_date'] = df['date'].dt.strftime('%b-%Y')
+
+    # Group data by 'current_date' and calculate the average yield_value
+    grouped_data = df.groupby('current_date')['yield_value'].mean().reset_index()
+
+    # Get unique values of 'current_date' for x-axis labels
+    x_labels = grouped_data['current_date'].tolist()
 
     context = {
-        'default_start_date': default_start_date,
-        'default_end_date': default_end_date,
+        'x_labels': x_labels,
     }
-
     return render(request, 'accounts/highchart.html', context)
     # return render(request, 'accounts/highchart.html')
 
@@ -359,10 +369,20 @@ def highchart_plot(request):
 def get_data_highchart(request):
     # Get plot type and date range filter parameters from AJAX request
     plot_type = request.GET.get('plot_type', 'bar')
-    start_date = pd.to_datetime(request.GET.get('start_date'))
-    end_date = pd.to_datetime(request.GET.get('end_date'))
+    start_date_str = request.GET.get('start_date')
+    end_date_str = request.GET.get('end_date')
 
+    print(start_date_str)
+    print(end_date_str)
     data = YieldData.objects.all()
+    
+
+    start_date = pd.to_datetime(start_date_str)
+    data = data.filter(date__gte=start_date)
+
+    
+    end_date = pd.to_datetime(end_date_str)
+    data = data.filter(date__lte=end_date)
 
     # Convert data to a Pandas DataFrame
     df = pd.DataFrame(list(data.values()))
