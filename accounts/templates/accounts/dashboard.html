@@ -1,24 +1,50 @@
-{% comment %} {% extends 'accounts/main.html' %}
+{% extends "accounts/base.html" %}
+{% load static %}
+{% block title %}Dashboard{% endblock %}
 
 {% block content %}
-    <h1>Dashboard</h1>
-    <h2>test</h2>
-    <div id="plotly_plot">{{ plot_html|safe }}</div>
-
-        <!-- Display the hover data here -->
-    <div id="hover_info">Hover Data: N/A</div>
-{% endblock content %}
-     {% endcomment %}
-<!-- your_template.html -->
-
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <script src="https://cdn.bokeh.org/bokeh/release/bokeh-2.4.3.min.js"></script>
-    <link href="https://cdn.bokeh.org/bokeh/release/bokeh-2.4.3.min.css" rel="stylesheet" type="text/css">
-    {{ script|safe }}
- </head>
- <body>
-     {{ div | safe }}
-</body>
-</html>
+    <!--CSS rules to HTML temaplte to control the size of the dive containter that hold bokeh plot -->
+    <style>
+        .bokeh-plot {
+            width: 100%;
+            height: 100%;
+            min-height: 400px;
+        }
+    </style>
+    <!-- Your dashboard content goes here -->
+    <div class="container mt-4">
+        <h2>Dashboard</h2>
+        <div class="bokeh-plot">
+            {{ div|safe }}
+            {{ script|safe }}
+        </div>
+    </div>
+    <!--JS to make the bokeh plot resize dynamically as the contianer size changes. -->
+    <script>
+        function resizePlot() {
+            var plotDiv = document.querySelector('.bokeh-plot');
+            var width = plotDiv.offsetWidth;
+            var height = plotDiv.offsetHeight;
+    
+            // Update the plot dimensions
+            plot.plot_width = width;
+            plot.plot_height = height;
+    
+            // Resize the plot
+            Plotting.update(plot);
+        }
+    
+        // Call resizePlot when the window is resized
+        window.addEventListener('resize', resizePlot);
+        resizePlot(); // Call initially to set the initial plot dimensions
+    </script>
+    <!-- Load Bokeh resources -->
+    <!-- Load Bokeh resources from the static/js folder -->
+    <!-- <script src="https://cdn.bokeh.org/bokeh/release/bokeh-2.4.3.min.js"></script>
+    <script src="https://cdn.bokeh.org/bokeh/release/bokeh-widgets-2.4.3.min.js"></script>
+    <script src="https://cdn.bokeh.org/bokeh/release/bokeh-tables-2.4.3.min.js"></script> -->
+    <!-- Add any other Bokeh resources you might need -->
+    <script src="{% static 'js/bokeh-2.4.3.min.js' %}"></script>
+    <script src="{% static 'js/bokeh-widgets-2.4.3.min.js' %}"></script>
+    <script src="{% static 'js/bokeh-tables-2.4.3.min.js' %}"></script>
+{% endblock %}

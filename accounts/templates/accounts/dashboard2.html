@@ -1,0 +1,125 @@
+{% extends "accounts/base.html" %}
+{% load static %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+    <!-- Your dashboard content goes here -->
+    <div class="container mt-4">
+        <h2>Dashboard</h2>
+        <div class="row">
+            <div class="col-md-4">
+                <label for="plotTypeSelect">Plot Type:</label>
+                <select id="plotTypeSelect" class="form-select">
+                    <option value="bar">Bar</option>
+                    <option value="line">Line</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label for="startDatePicker">Start Date:</label>
+                <input type="date" id="startDatePicker" class="form-control" value="{{ default_start_date }}">
+            </div>
+            <div class="col-md-4">
+                <label for="endDatePicker">End Date:</label>
+                <input type="date" id="endDatePicker" class="form-control" value="{{ default_end_date }}">
+            </div>
+        </div>
+        <div class="row mt-4">
+            <div class="col-md-12">
+                <canvas id="chartCanvas" width="800" height="400"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script src="{% static 'js/chart.min.js' %}"></script>
+    <script src="{% static 'js/chartjs-plugin-zoom-2.0.1.js' %}"></script>
+    <script src="{% static 'js/chartjs-plugin-drag.js' %}"></script>
+
+    <script>
+        var ctx = document.getElementById('chartCanvas').getContext('2d');
+        var plotTypeSelect = document.getElementById('plotTypeSelect');
+        var startDatePicker = document.getElementById('startDatePicker');
+        var endDatePicker = document.getElementById('endDatePicker');
+
+        // Calculate default start and end dates
+        var currentDate = new Date();
+        var defaultEndDate = currentDate.toISOString().split('T')[0];  // Current date
+        var fourteenDaysAgo = new Date(currentDate);
+        fourteenDaysAgo.setDate(currentDate.getDate() - 14);
+        var defaultStartDate = fourteenDaysAgo.toISOString().split('T')[0];  // 14 days ago
+
+        startDatePicker.value = defaultStartDate;
+        endDatePicker.value = defaultEndDate;
+
+        var initialData = {
+            labels: {{ x_labels|safe }},
+            datasets: [{
+                label: 'Average Yield',
+                data: [],
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 1,
+                fill: true,
+                type: 'bar'  // Default to bar chart
+            },
+            {
+                label: "Line dateset",
+                data: [],
+                type: 'line' // add a line 
+            },
+            ]
+        };
+
+        var myChart = new Chart(ctx, {
+            type: initialData.datasets[0].type,
+            data: initialData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                },
+                plugins:{
+                    zoom:{
+                        zoom:{
+                            wheel:{enabled: true},
+                            pinch:{enable: true},
+                            mode: 'xy'
+                        }
+                    },
+                    dragdata: {showTooltip: true,}
+                }
+            }
+        });
+
+
+        // Function to update the chart based on user selections
+        function updateChart() {
+            var plotType = plotTypeSelect.value;
+            var startDate = startDatePicker.value;
+            var endDate = endDatePicker.value;
+            console.log(startDate, endDate);
+            fetch(`/get_data/?plot_type=${plotType}&start_date=${startDate}&end_date=${endDate}`)
+                .then(response => response.json())
+                .then(data => {
+                //myChart.type = data.chart_type;
+                myChart.data.labels = data.labels;
+                myChart.data.datasets[0].data = data.data;
+                myChart.data.datasets[1].data = data.data;
+                myChart.update();
+            });
+        }
+
+        // Attach event listeners to update the chart when selections change
+        plotTypeSelect.addEventListener('change', updateChart);
+        startDatePicker.addEventListener('change', updateChart);
+        endDatePicker.addEventListener('change', updateChart);
+
+        // Call updateChart initially to populate the initial data
+        updateChart();
+    </script>
+{% endblock %}
+
+
+

@@ -39,3 +39,13 @@ class FormData(models.Model):
 
     def __str__(self):
         return self.username
+
+class YieldData(models.Model):
+    root_lot_id = models.CharField(max_length=10)
+    wafer_id = models.CharField(max_length=2)
+    yield_value = models.FloatField()
+    date = models.DateField()
+
+    
+    class Meta:
+        db_table = "yield_data"

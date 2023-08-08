@@ -3,13 +3,12 @@ from . import views
 
 
 urlpatterns = [
+    # path('', views.home, name='home'),
     path('', views.home, name='home'),
-    path('products/', views.products),
-    path('customer/', views.customer),
-    path('people/', views.PersonListView.as_view()),
-    path("netinfo/", views.netinfo, name="netinfo"), 
-    path('datatable/', views.datatable_view, name='datatable'),
-    path('images/<str:image_name>/', views.serve_image, name='serve_image'),
+    path('dashboard2/', views.chartjs_plot, name='chartjs_plot'),
+    path('get_data/', views.get_data, name='get_data'),
+    path('highchart/', views.highchart_plot, name='highchart_plot'),
+    path('get_data_highchart/', views.get_data_highchart, name='get_data_highchart'),
     # Add other URL patterns if you have any
     path('form/', views.form_view, name='form'),
     path('form/<int:entry_id>/', views.form_view, name='edit_form'),

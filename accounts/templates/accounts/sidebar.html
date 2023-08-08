@@ -1,0 +1,26 @@
+<nav class="col-md-3 col-lg-2 d-md-block bg-light sidebar">
+    <div class="position-sticky">
+        
+        <!-- Sidebar Links -->
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link active" href="{% url 'home' %}">Dashboard</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link active" href="{% url 'chartjs_plot' %}">ChartJS Test</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link active" href="{% url 'highchart_plot' %}">HighChart Test</a>
+            </li>
+            <!-- Add other sidebar items here -->
+            <li class="nav-item">
+                <a class="nav-link" href="#">Link 1</a>
+            </li>
+            <!-- Add more sidebar items as needed -->
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'datatable-view2' %}">Data Table Example</a>
+            </li>
+
+        </ul>
+    </div>
+</nav>
