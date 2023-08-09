@@ -371,7 +371,10 @@ def get_data_highchart(request):
     plot_type = request.GET.get('plot_type', 'bar')
     start_date_str = request.GET.get('start_date')
     end_date_str = request.GET.get('end_date')
-
+    product_id = request.GET.get('product_id')
+    bin_type = request.GET.get('bin_type')
+    print("------------------------")
+    print(bin_type)
     print(start_date_str)
     print(end_date_str)
     data = YieldData.objects.all()
@@ -386,6 +389,9 @@ def get_data_highchart(request):
 
     # Convert data to a Pandas DataFrame
     df = pd.DataFrame(list(data.values()))
+
+    # fitler the data 
+    df = df[df['product_id'] == product_id]
 
     # Convert the 'date' column to a datetime object
     df['date'] = pd.to_datetime(df['date'])

@@ -43,6 +43,8 @@ class FormData(models.Model):
 class YieldData(models.Model):
     root_lot_id = models.CharField(max_length=10)
     wafer_id = models.CharField(max_length=2)
+    product_id = models.TextField()
+    bin_type = models.TextField()
     yield_value = models.FloatField()
     date = models.DateField()
 
