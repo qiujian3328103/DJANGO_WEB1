@@ -1,6 +1,11 @@
 <!-- https://mdbootstrap.com/docs/standard/extended/multiselect/ -->
+<!-- https://colorlib.com/wp/template/multiselect-02/ -->
 {% extends "accounts/base.html" %}
 {% load static %}
+
+{%block extra_css %}
+{%endblock%}
+
 {% block title %}Highcharts Dashboard{% endblock %}
 
 {% block content %}
@@ -8,32 +13,41 @@
         <h2>Highcharts Dashboard</h2>
         <div class="widget_box p-3 rounded" style="background-color: #f8f9fa;">
             <div class="row align-items-center">
-                <div class="col-md-3">
+                <div class="col-md-2 mt-0 p-1">
                     <select id="plotTypeSelect" class="browser-default custom-select">
                         <option value="bar">Bar</option>
                         <option value="line">Line</option>
+                        <option value="bin_group">Bin Group</option>
                     </select>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-2 mt-0 p-1">
+                    <select id="groupDateSelect" class="browser-default custom-select">
+                        <option value="Week">Week</option>
+                        <option value="Month">Month</option>
+                        <option value="Quarter">Quarter</option>                        
+                    </select>
+                </div>
+                <div class="col-md-3 mt-0 p-1">
                     <select id="productID" class="browser-default custom-select">
                         <option value="Kamorta">Kamorta</option>
                         <option value="Magnus">Magnus</option>
                         <option value="Jcala">Jcala</option>
                     </select>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-2 mt-0 p-1">
                     <!-- <label for="startDatePicker">Start Date:</label> -->
                     <input type="date" id="startDatePicker" class="form-control" value="{{ default_start_date }}">
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-2 mt-0 p-1">
                     <!-- <label for="endDatePicker">End Date:</label> -->
                     <input type="date" id="endDatePicker" class="form-control" value="{{ default_end_date }}">
                 </div>
             </div>
 
             <div class="row align-items-center">
-                <div class="col-md-4 mb-1">
-                    <select id="binType" class="select" multiple>
+                <div class="col-md-12 p-1">
+                    <label>Select Bins</label>
+                    <select id="binType" multiple="" class="label ui selection fluid dropdown">
                         <option value="YIELD">YIELD</option>
                         <option value="ATPG_INT">ATPG_INT</option>
                         <option value="ATPG_SAF">ATPG_SAF</option>
@@ -45,7 +59,6 @@
                         <option value="CONTINUITY">CONTINUITY</option>
                         <option value="RX">RX</option>
                     </select>
-                    <label class="form-label select-label">Example label</label>
                 </div>
             </div>
         </div>
@@ -59,6 +72,12 @@
     </div>
 
 
+    <script src="{%static 'multiselect-02/js/jquery.min.js' %}"></script>
+    <script src="{%static 'multiselect-02/js/popper.js' %}"></script>
+    <script src="{%static 'multiselect-02/js/bootstrap.min.js' %}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/semantic-ui@2.2.13/dist/semantic.min.js"></script>
+    <script src="{%static 'multiselect-02/js/main.js' %}"></script>
+    
     <script src="https://code.highcharts.com/highcharts.js"></script>
     <script src="https://code.highcharts.com/modules/exporting.js"></script>
     <script src="https://code.highcharts.com/modules/export-data.js"></script>
@@ -67,53 +86,98 @@
         var plotTypeSelect = document.getElementById('plotTypeSelect');
         var startDatePicker = document.getElementById('startDatePicker');
         var endDatePicker = document.getElementById('endDatePicker');
+        var groupDateSelect = document.getElementById('groupDateSelect');
         var chart;  // Variable to store the Highcharts chart instance
-        function createChart(xLabels, yValues) {
-                        // Destroy previous chart instance if exists
+
+        if(plotTypeSelect.value === "bar"){
+            var plot_type = "column"
+        }else if(plotTypeSelect.value == "line"){
+            var plot_type = "line"
+        }else{
+            // force to other options to vertical bar chart
+            var plot_type = "column"
+        }
+
+        function createChart(data) {
+            // Destroy previous chart instance if exists
             if (chart) {
                 chart.destroy();
             };
-
-            Highcharts.chart('chartContainer', {
-                chart: {
-                    type:  plotTypeSelect.value
-                },
-                title: {
-                    text: 'Average Yield Data by Month'
-                },
-                xAxis: {
-                    categories: xLabels,
+            if (data.chart_type === 'line' || data.chart_type === 'bar'){
+                // console.log(data.chart_type);
+                // console.log(data.x_labels);
+                Highcharts.chart('chartContainer', {
+                    chart: {
+                            type:  data.chart_type
+                        },
+                        title: {
+                            text: 'Average Yield Data by Month'
+                        },
+                        xAxis: {
+                            categories: data.x_labels,
+                            title: {
+                                text: 'Month'
+                            }
+                        },
+                        yAxis: {
+                            title: {
+                                text: 'Average Yield'
+                            }
+                        },
+                        series: [{
+                            name: 'Average Yield',
+                            data: data.y_values
+                        }],
+                        legend: {
+                            layout: 'vertical',
+                            align: 'right',
+                            verticalAlign: 'middle'
+                        },
+                        // Add other Highcharts options as needed
+                });
+            }else{
+                // console.log(data.bin_types);
+                Highcharts.chart('chartContainer', {
+                    chart: {
+                        type: 'column'
+                    },
                     title: {
-                        text: 'Month'
-                    }
-                },
-                yAxis: {
-                    title: {
-                        text: 'Average Yield'
-                    }
-                },
-                series: [{
-                    name: 'Average Yield',
-                    data: yValues
-                }],
-                // Add other Highcharts options as needed
-            });
+                        text: 'Average Yield Data by Bin Type and Current Date'
+                    },
+                    xAxis: {
+                        categories: data.bin_types,
+                        title: {
+                            text: 'Bin Type'
+                        }
+                    },
+                    yAxis: {
+                        title: {
+                            text: 'Average Yield'
+                        }
+                    },
+                    series: data.series,
+                    legend: {
+                            layout: 'vertical',
+                            align: 'right',
+                            verticalAlign: 'middle'
+                        },
+                });
+            }
         }
+
 
         function updateChart() {
             var startDate = startDatePicker.value;
             var endDate = endDatePicker.value;
             var product_id = productID.value;
-            var bin_type = binType.value;
-            console.log(product_id);
-            console.log(startDate);
-            console.log(endDate);
+            var group_date = groupDateSelect.value;
+            var selectedBinTypes = Array.from(binType.selectedOptions, option => option.value);
 
-            fetch(`/get_data_highchart/?plot_type=${plotTypeSelect.value}&start_date=${startDate}&end_date=${endDate}&bin_type=${bin_type}&product_id=${product_id}`)
+            fetch(`/get_data_highchart/?plot_type=${plotTypeSelect.value}&group_date=${group_date}&start_date=${startDate}&end_date=${endDate}&bin_types=${selectedBinTypes}&product_id=${product_id}`)
                 .then(response => response.json())
                 .then(data => {
-                    console.log(data.y_values);
-                    createChart(data.x_labels, data.y_values);
+                    // pass the data from view to js function to create highcharts
+                    createChart(data);
                     
                 });
         }
@@ -123,6 +187,8 @@
         endDatePicker.addEventListener('change', updateChart);
         binType.addEventListener('change', updateChart);
         productID.addEventListener('change', updateChart);
+        groupDateSelect.addEventListener('change', updateChart);
+
         // Calculate default start and end dates
         var currentDate = new Date();
         var defaultEndDate = currentDate.toISOString().split('T')[0];

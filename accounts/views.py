@@ -342,25 +342,26 @@ def get_data(request):
 
 
 def highchart_plot(request):
-    data = YieldData.objects.all()
+    # data = YieldData.objects.all()
 
     # Convert data to a Pandas DataFrame
-    df = pd.DataFrame(list(data.values()))
+    # df = pd.DataFrame(list(data.values()))
 
     # Convert the 'date' column to a datetime object
-    df['date'] = pd.to_datetime(df['date'])
+    # df['date'] = pd.to_datetime(df['date'])
 
     # Add a new column 'current_date' in "Month-Y" format
-    df['current_date'] = df['date'].dt.strftime('%b-%Y')
+    # df['current_date'] = df['date'].dt.strftime('%Y-%w')
 
     # Group data by 'current_date' and calculate the average yield_value
-    grouped_data = df.groupby('current_date')['yield_value'].mean().reset_index()
+    # grouped_data = df.groupby('current_date')['yield_value'].mean().reset_index()
 
     # Get unique values of 'current_date' for x-axis labels
-    x_labels = grouped_data['current_date'].tolist()
+    # x_labels = grouped_data['current_date'].tolist()
 
     context = {
-        'x_labels': x_labels,
+        'x_labels': "x",
+        'y_labels': "y"
     }
     return render(request, 'accounts/highchart.html', context)
     # return render(request, 'accounts/highchart.html')
@@ -372,14 +373,23 @@ def get_data_highchart(request):
     start_date_str = request.GET.get('start_date')
     end_date_str = request.GET.get('end_date')
     product_id = request.GET.get('product_id')
-    bin_type = request.GET.get('bin_type')
-    print("------------------------")
-    print(bin_type)
-    print(start_date_str)
-    print(end_date_str)
+    bin_types = request.GET.get('bin_types')
+    group_date = request.GET.get('group_date')
+    
+    if plot_type == "bar":
+        # vertical bar plot 
+        plot_type == "column"
+    elif plot_type == "line":
+        plot_type == "line"
+
+
+    if bin_types=='':
+        bin_types_list = ["YIELD"]
+    else:
+        bin_types_list = bin_types.split(",")
+    
     data = YieldData.objects.all()
     
-
     start_date = pd.to_datetime(start_date_str)
     data = data.filter(date__gte=start_date)
 
@@ -393,22 +403,49 @@ def get_data_highchart(request):
     # fitler the data 
     df = df[df['product_id'] == product_id]
 
-    # Convert the 'date' column to a datetime object
-    df['date'] = pd.to_datetime(df['date'])
-
-    # Add a new column 'current_date' in "Month-Y" format
-    df['current_date'] = df['date'].dt.strftime('%b-%Y')
-
+    # convert the data base on the select date 
+    df["date"] = pd.to_datetime(df['date'])
+    if group_date == "Month":
+        df['current_date'] = df['date'].dt.strftime('%Y-%b')
+    elif group_date == "Week":
+        df['current_date'] = df['date'].dt.strftime('%Y-%W')
+    elif group_date == "Quarter":
+        df['current_date'] = df['date'].dt.to_period('Q').dt.strftime('%Y-Q%q')
+    
     # Filter data based on date range
     filtered_data = df[(df['date'] >= start_date) & (df['date'] <= end_date)]
+    
+    
+    
+    # based on the plot type to decide the plot 
+    if plot_type == "bin_group":
+        # select bin_group, use the bin_types_list to filter the the customer select bin_types 
+        filtered_data = filtered_data[filtered_data['bin_type'].isin(bin_types_list)]
+        # Process the data to calculate average yield values for each bin type and current date
+        grouped_data = filtered_data.groupby(['bin_type', 'current_date'])['yield_value'].mean().reset_index()
+        # Prepare the data in a format suitable for Highcharts
+        unique_bin_types = grouped_data['bin_type'].unique()
 
-    # Group data by 'current_date' and calculate the average yield_value
-    grouped_data = filtered_data.groupby('current_date')['yield_value'].mean().reset_index()
+        series_data = []
+        for current_date in grouped_data['current_date'].unique():
+            series_data.append({
+                'name': current_date,
+                'data': grouped_data[grouped_data['current_date'] == current_date]['yield_value'].tolist()
+            })
+        chart_data = {
+            'bin_types': unique_bin_types.tolist(),
+            'series': series_data,
+            'chart_type': plot_type
+        }
+    else:
+        print(filtered_data.current_date.unique().tolist())
+        # Group data by 'current_date' and calculate the average yield_value
+        grouped_data = filtered_data.groupby('current_date')['yield_value'].mean().reset_index()
 
-    chart_data = {
-        'x_labels': grouped_data['current_date'].tolist(),
-        'y_values': grouped_data['yield_value'].tolist(),
-        'chart_type': plot_type,
-    }
+        chart_data = {
+            'x_labels': grouped_data['current_date'].tolist(),
+            'y_values': grouped_data['yield_value'].tolist(),
+            'chart_type': plot_type,
+        }
 
     return JsonResponse(chart_data)
