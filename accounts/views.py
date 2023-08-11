@@ -341,23 +341,6 @@ def get_data(request):
 
 
 def highchart_plot(request):
-    # data = YieldData.objects.all()
-
-    # Convert data to a Pandas DataFrame
-    # df = pd.DataFrame(list(data.values()))
-
-    # Convert the 'date' column to a datetime object
-    # df['date'] = pd.to_datetime(df['date'])
-
-    # Add a new column 'current_date' in "Month-Y" format
-    # df['current_date'] = df['date'].dt.strftime('%Y-%w')
-
-    # Group data by 'current_date' and calculate the average yield_value
-    # grouped_data = df.groupby('current_date')['yield_value'].mean().reset_index()
-
-    # Get unique values of 'current_date' for x-axis labels
-    # x_labels = grouped_data['current_date'].tolist()
-
     context = {
         'x_labels': "x",
         'y_labels': "y"
@@ -405,7 +388,7 @@ def get_data_highchart(request):
     # convert the data base on the select date 
     df["date"] = pd.to_datetime(df['date'])
     if group_date == "Month":
-        df['current_date'] = df['date'].dt.strftime('%Y-%b')
+        df['current_date'] = df['date'].dt.strftime('%Y-%m')
     elif group_date == "Week":
         df['current_date'] = df['date'].dt.strftime('%Y-%W')
     elif group_date == "Quarter":
@@ -431,20 +414,55 @@ def get_data_highchart(request):
                 'name': current_date,
                 'data': grouped_data[grouped_data['current_date'] == current_date]['yield_value'].tolist()
             })
-        chart_data = {
+        highcharts_data = {
             'bin_types': unique_bin_types.tolist(),
             'series': series_data,
             'chart_type': plot_type
         }
+        datatable_data = []
+        chart_data = {
+        "highcharts_data": highcharts_data,
+        "datatable_data": datatable_data,
+        }
+
     else:
         # Group data by 'current_date' and calculate the average yield_value
         grouped_data = filtered_data.groupby('current_date')['yield_value'].mean().reset_index()
-
-        chart_data = {
+        # highchart data to render 
+        highcharts_data = {
             'x_labels': grouped_data['current_date'].tolist(),
             'y_values': grouped_data['yield_value'].tolist(),
             'chart_type': plot_type,
         }
+        # datatable_data to render 
+        datatable_data = (
+            filtered_data
+            .groupby("current_date")
+            .agg(
+                total_lots=("root_lot_id", "nunique"),
+                total_wafers=("wafer_id", "count"),
+                avg_yield=("yield_value", "mean")
+            )
+            .reset_index()
+        )
+        # print(group_date)
+        # if group_date == "Month":
+        #     # Convert 'current_date' to datetime
+        #     datatable_data['current_date'] = pd.to_datetime(datatable_data['current_date'], format='%Y-%b')
+        #     # Sort DataFrame by 'current_date'
+        #     datatable_data = datatable_data.sort_values(by='current_date', key = pd.to_datetime)
+        #     # Convert 'current_date' back to string format
+        #     datatable_data['current_date'] = datatable_data['current_date'].dt.strftime('%Y-%b')
+        # else:
+        #     # Sort the datatable_data by the 'current_date' column
+        #     datatable_data = datatable_data.sort_values(by='current_date')
+        datatable_data = datatable_data.sort_values(by='current_date')
+        print(datatable_data)
+        chart_data = {
+        "highcharts_data": highcharts_data,
+        "datatable_data": datatable_data.to_dict("records") if not datatable_data.empty else [],
+        }
+
 
     return JsonResponse(chart_data)
 

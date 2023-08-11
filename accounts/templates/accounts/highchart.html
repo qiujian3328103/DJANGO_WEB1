@@ -3,8 +3,51 @@
 {% extends "accounts/base.html" %}
 {% load static %}
 
-{%block extra_css %}
-{%endblock%}
+{% block extra_css %}
+<style>
+    /* Style the table container */
+        .table-container {
+        width: 100%;
+        overflow-y: auto; /* Enable vertical scrolling */
+        max-height: 400px; /* Set the maximum height for scrolling */
+    }
+    /* Place the CSS code here */
+    /* Style the DataTable container */
+    #dataTableContainer {
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+    /* Reduce font size of DataTable */
+    #dataTableContainer {
+        font-size: 14px; /* Adjust the font size as needed */
+    }
+
+    /* Reduce row height of DataTable */
+    #dataTableContainer tbody tr {
+        height: 10px; /* Adjust the row height as needed */
+    }
+
+    /* Style table header */
+    #dataTableContainer thead th {
+        background-color: #f8f9fa;
+        border-bottom: 2px solid #ddd;
+        text-align: left;
+        padding: 8px;
+    }
+
+    /* Style table rows */
+    #dataTableContainer tbody td {
+        border-bottom: 1px solid #ddd;
+        padding: 8px;
+    }
+
+    /* Add hover effect to table rows */
+    #dataTableContainer tbody tr:hover {
+        background-color: #f2f2f2;
+    }
+</style>
+{% endblock %}
 
 {% block title %}Highcharts Dashboard{% endblock %}
 
@@ -62,6 +105,7 @@
                 </div>
             </div>
         </div>
+        <!-- create the highchart div to show the plot -->
         <div class="widget_box mt-4 p-3 rounded" style="background-color: #f8f9fa;">
             <div class="row">
                 <div class="col-md-12">
@@ -69,19 +113,39 @@
                 </div>
             </div>
         </div>
+        <!-- create a new div for the datatables  -->
+        <div class="widget_box mt-4 p-3 rounded" style="background-color: #f8f9fa;">
+            <div class="row">
+                <div class="col-md-12">
+                    <table id="dataTableContainer" class="display" style="width:100%"></table> <!-- Add this table element -->
+                </div>
+            </div>
+        </div>
+        
     </div>
 
+ 
 
+    <!-- Mutliselect import the mutli select dorpdown widget  -->
     <script src="{%static 'multiselect-02/js/jquery.min.js' %}"></script>
     <script src="{%static 'multiselect-02/js/popper.js' %}"></script>
     <script src="{%static 'multiselect-02/js/bootstrap.min.js' %}"></script>
     <script src="https://cdn.jsdelivr.net/npm/semantic-ui@2.2.13/dist/semantic.min.js"></script>
     <script src="{%static 'multiselect-02/js/main.js' %}"></script>
     
+    <!-- highcharts libaray include for highchart   -->
     <script src="https://code.highcharts.com/highcharts.js"></script>
     <script src="https://code.highcharts.com/modules/exporting.js"></script>
     <script src="https://code.highcharts.com/modules/export-data.js"></script>
     <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+
+    <!-- jquery datatable include for data table   -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/2.10.2/umd/popper.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/progressbar.js/1.1.0/progressbar.min.js"></script>
+
     <script>
         var plotTypeSelect = document.getElementById('plotTypeSelect');
         var startDatePicker = document.getElementById('startDatePicker');
@@ -177,9 +241,51 @@
                 .then(response => response.json())
                 .then(data => {
                     // pass the data from view to js function to create highcharts
-                    createChart(data);
+                    createChart(data.highcharts_data);
+                    updateDataTable(data.datatable_data); 
                     
                 });
+        }
+
+        function updateDataTable(data) {
+            console.log(data);
+            var dataTableContainer = document.getElementById('dataTableContainer');
+            var current_plot_type = plotTypeSelect.value;
+            var dataTable;
+            
+            // Destroy existing DataTable if it exists
+            if ($.fn.DataTable.isDataTable(dataTableContainer)) {
+                dataTable = $(dataTableContainer).DataTable();
+                dataTable.clear().destroy();
+            }
+            // Create or update DataTable using the 'data' parameter
+            // Define columns based on the chart_type
+            var columns;
+            if (current_plot_type === 'bar' || current_plot_type === 'line') {
+                console.log(data);
+                columns = [
+                        { title: 'Date', data: 'current_date',  render: $.fn.dataTable.render.text()},
+                        { title: 'Total Lots', data: 'total_lots' },
+                        { title: 'Total Wafers', data: 'total_wafers' },
+                        { title: 'Average Yield', data: 'avg_yield' }
+                    ];
+            } else {
+                    // Define columns for other chart types if needed
+                    columns = [
+
+                    ];
+            }
+            console.log(current_plot_type);
+            console.log('columns:', columns);
+            $(dataTableContainer).DataTable({
+                destroy: true,
+                scrollY: "200px", // add a scroll bar  
+                data: data, // Replace with actual data from 'data' object
+                columns: columns, 
+                searching: false,   // Disable search bar
+                paging: false,       // Disable pagination
+                info: false  // Disable info display
+            });
         }
 
         plotTypeSelect.addEventListener('change', updateChart);
