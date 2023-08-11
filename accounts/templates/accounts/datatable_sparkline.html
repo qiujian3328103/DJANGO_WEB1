@@ -1,0 +1,138 @@
+{% extends "accounts/base.html" %}
+{% load static %}
+
+{%block extra_css %}
+<style>
+    /* Styling for the toggle icons */
+    .toggle-icon {
+        cursor: pointer;
+        padding: 5px;
+        border-radius: 50%; /* To create a circular icon background */
+    }
+
+    /* Custom style for the text area row */
+    .text-area-row {
+        display: none;
+        background-color: #f0f0f0;
+    }
+
+    /* Show the text area row when it's expanded */
+    .text-area-row.expanded {
+        display: table-row;
+    }
+
+    /* Align buttons to center */
+    .center {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+</style>
+{%endblock%}
+
+{% block title %}Datatables Sparkline{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Datatables Sparkline</h2>
+    <table id="data-table-spark-line" class="table display" cellspacing="0"  width="100%">
+        <thead>
+            <tr class="bg-dark text-light">
+                <th>Bins</th>
+                <th>Trends</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- DataTable rows will be added here dynamically -->
+        </tbody>
+    </table>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+<script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/2.10.2/umd/popper.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/progressbar.js/1.1.0/progressbar.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-sparklines/2.1.2/jquery.sparkline.min.js"></script>
+
+<script>
+    $(document).ready(function() {
+        var table = $('#data-table-spark-line').DataTable({
+            "autoWidth": true,
+            "ajax": "{% url 'data_json_sparkline' %}",
+            "columns": [
+                { "data": "bin_type" },
+                { 
+                    "data": "sparkline",
+                    "render": function (data, type, row) {
+                        var sparklineData = data.map(function(value) {
+                            return parseFloat(value);
+                        });
+                        
+                        return '<span class="sparkline">' + sparklineData.join(',') + '</span>';
+                    }
+                }
+            ], 
+            "responsive": true,
+        });
+
+        // Initialize jQuery Sparklines after DataTable is drawn
+        table.on('draw', function () {
+            $('.sparkline').each(function() {
+                var $this = $(this);
+                var sparklineData = $this.text().split(',').map(function(value) {
+                    return parseFloat(value);
+                });
+
+                $this.sparkline(sparklineData, {
+                    type: 'line',
+                    width: '80px',
+                    height: '30px',
+                    lineColor: '#1e9ff2',
+                    fillColor: '#d9f0ff',
+                    highlightLineColor: 'rgba(30,159,242,.8)',
+                    highlightSpotColor: 'rgba(30,159,242,.8)',
+                    minSpotColor: false,
+                    maxSpotColor: false,
+                    spotColor: false,
+                    spotRadius: 2,
+                    tooltipFormat: '{{offset}}: {{value}}'
+                });
+            });
+        });
+
+        
+    });
+</script>
+<style>
+    /* Styling for the toggle icons */
+    .toggle-icon {
+        cursor: pointer;
+        padding: 5px;
+        border-radius: 50%;
+    }
+
+    /* Custom style for the text area row */
+    .text-area-row {
+        display: none;
+        background-color: #f0f0f0;
+    }
+
+    /* Show the text area row when it's expanded */
+    .text-area-row.expanded {
+        display: table-row;
+    }
+
+    /* Align buttons to center */
+    .center {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    /* Increase row height */
+    table.dataTable tbody th, table.dataTable tbody td {
+        padding: 10px; /* Adjust the padding to increase row height */
+    }
+</style>
+{% endblock %}

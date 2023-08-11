@@ -15,4 +15,7 @@ urlpatterns = [
     path('datatable2/', views.datatable_view_form, name='datatable-view2'),
     path('data_json/', views.get_form_data_json, name='data_json'),
     path('delete_entry/', views.delete_entry, name='delete_entry'),
+
+    path('table_sparkline/', views.table_sparkline, name="table_sparkline"),
+    path('data_json_sparkline/', views.get_sparkline_data, name='data_json_sparkline')
 ]

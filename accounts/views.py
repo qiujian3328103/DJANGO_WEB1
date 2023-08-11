@@ -23,8 +23,11 @@ import datetime
 from .forms import FormDataForm
 
 
-# def home(request):
-#     return render(request,'accounts/dashboard.html')
+# https://blog.csdn.net/weixin_42289273/article/details/109408689
+# https://www.twblogs.net/a/5c10ec5abd9eee5e40bb1105
+# add button in front of the table 
+# https://stackoverflow.com/questions/52478489/bootstrap-4-collapse-accordion-table-in-django
+
 
 def products(request):
     return render(request,"accounts/product.html")
@@ -108,7 +111,6 @@ def plot(request):
     return render(request, 'accounts/dashboard.html', {'script': script, 'div': div})
 
 
-
 def netinfo(request):  # ajax的url
     data_list = []
     query_set = Commodity.objects.all()
@@ -131,10 +133,7 @@ def netinfo(request):  # ajax的url
     data_dic = {}
     data_dic['data'] = data_list  # 格式一定要符合官网的json格式，否则会出现一系列错误
     return HttpResponse(json.dumps(data_dic))
-# https://blog.csdn.net/weixin_42289273/article/details/109408689
-# https://www.twblogs.net/a/5c10ec5abd9eee5e40bb1105
-# add button in front of the table 
-# https://stackoverflow.com/questions/52478489/bootstrap-4-collapse-accordion-table-in-django
+
 
 def datatable_view(request):
     data = Person.objects.all()
@@ -438,7 +437,6 @@ def get_data_highchart(request):
             'chart_type': plot_type
         }
     else:
-        print(filtered_data.current_date.unique().tolist())
         # Group data by 'current_date' and calculate the average yield_value
         grouped_data = filtered_data.groupby('current_date')['yield_value'].mean().reset_index()
 
@@ -449,3 +447,53 @@ def get_data_highchart(request):
         }
 
     return JsonResponse(chart_data)
+
+
+def table_sparkline(request):
+    """_summary_
+    Show datatable with a sparkline. Use the yield_table data 
+
+    Args:
+        request (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
+    return render(request, 'accounts/datatable_sparkline.html')
+
+
+def get_sparkline_data(request):
+    """_summary_
+    Get data for the sparkline. Use the yield_table data 
+
+    Args:
+        request (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
+    # Get the data from the yield_table
+    data = YieldData.objects.all()
+
+    # Filter the data
+    # Convert data to a Pandas DataFrame
+    df = pd.DataFrame(list(data.values()))
+
+    # convert the data base on the select date 
+    df["date"] = pd.to_datetime(df['date'])
+
+    # get bin types 
+    bin_types = df['bin_type'].unique().tolist()
+    context = []
+    # loop by the bin types and get the week list 
+    for bin_type in bin_types:
+        bin_data = df[df['bin_type'] == bin_type]
+        sparkline_data = bin_data.groupby(bin_data['date'].dt.week)['yield_value'].mean()
+        sparkline = [round(val, 2) for val in sparkline_data.tolist()]
+        
+        context.append({
+            'bin_type': bin_type,
+            'sparkline': sparkline,
+        })
+
+    return JsonResponse({'data': context})
