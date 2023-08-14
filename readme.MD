@@ -23,7 +23,7 @@ Here are some animated GIFs that demonstrate the features and functionalities of
 ![Feature 2 GIF Demo](demo/demo2.gif)
 
 ### datatablejs progressbar and toggle button demo
-![Feature 3 GIF Demo](demo/demo3.gif)
+![Feature 3 GIF Demo](demo/demo6.gif)
 
 ### highchart demo
 ![Feature 4 GIF Demo](demo/demo4.gif)

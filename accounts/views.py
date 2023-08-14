@@ -468,7 +468,7 @@ def get_data_highchart(request):
 
 
 def wafermap(request):
-    df_raw = pd.read_csv(r"C:\Users\Jian Qiu\Dropbox\pythonprojects\django_web1\KAMORTA.csv", index_col=False)
+    df_raw = pd.read_csv(r"C:\Users\Jian Qiu\Dropbox\pythonprojects\django_web1\sample.csv", index_col=False)
     # Filter out rows based on "sort_test_flag"
     df = df_raw[df_raw["sort_test_flag"] == "T"]
     width = 7270.96*0.001

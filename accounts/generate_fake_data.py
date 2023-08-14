@@ -42,7 +42,7 @@ def generate_fake_data():
     fake = Faker()
     root_lot_ids = [fake.random_letter() + fake.random_letter() + fake.random_letter() + str(fake.random_number(digits=2)) for _ in range(600)]  # Generate 600 root_lot_ids
     wafer_ids = [f'{i:02}' for i in range(1, 26)]
-    product_ids = ["Kamorta", "Magnus", "Jcala"]
+    product_ids = ["product1", "product2", "product3"]
     bin_types = ["ATPG_INT", "ATPG_SAF", "IDDQ", "MBIST_HV", "MBIST_LV", "DC", "TDF", "YIELD", "CONTINUITY", "RX"]
 
     start_date = datetime(2023, 1, 1)
@@ -104,7 +104,7 @@ def generate_fake_data_product():
     ''')
 
     # List of products to insert
-    product_list = ["Kamorta", "Jcala", "Magnus", "Hastings", "Hasting-Primep"]
+    product_list = ["product1", "product2", "product3", "product4", "product5"]
 
     # Insert the data into the table
     for product in product_list:
