@@ -51,3 +51,9 @@ class YieldData(models.Model):
     
     class Meta:
         db_table = "yield_data"
+
+class ProductList(models.Model):
+    product_id = models.CharField(max_length=10)  # Adjust the max_length as needed
+
+    class Meta:
+        db_table = "product_list"

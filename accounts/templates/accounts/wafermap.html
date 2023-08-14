@@ -1,0 +1,168 @@
+<!-- https://mdbootstrap.com/docs/standard/extended/multiselect/ -->
+<!-- https://colorlib.com/wp/template/multiselect-02/ -->
+{% extends "accounts/base.html" %}
+{% load static %}
+
+{% block extra_css %}
+<script>
+    main {
+        padding: 0;
+        margin: 0;
+        width: 100%;
+        height: 100%;
+    }
+
+    .container {
+        width: 100%;
+        height: 100%;
+    }
+
+    card-body {
+        height: 200px;
+        overflow-y: auto;
+        overflow: hidden;
+    }
+</script>
+{% endblock %}
+
+{% block title %}Wafer Map{% endblock %}
+
+{% block content %}
+    <div class="container mt-4 no-lr-margin">
+        <div class="row g-0">
+            {% for i in wafer_range %}
+                <div class="col-md-3 mb-2 p-1 no-lr-margin">
+                    <div class="card">
+                        <div class="card-header" style="height: 25px; padding: 1px 12px;  font-size: 14px;">
+                            SNK01-{{i}}
+                        </div>
+                        <div class="card-body">
+                            <div id="wafer-map-{{ i }}" style="width: 100%; height: 220px;"></div>
+                        </div>
+                        <div class="card-footer">
+                            <button type="button" class="btn btn-primary" onclick="waferMapClick('{{ i }}')">Click</button>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        <!-- <div class="card-header">
+            Wafer Map Title
+        </div>
+        <div class="card-body">
+            <div id="wafer-map-1" style="width: 100%; height: 400px;"></div>
+        </div>
+        <div class="card-footer">
+            Some footer content (if needed)
+        </div> -->
+    </div>
+    
+    <!-- highcharts libaray include for highchart   -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+    <script src="https://code.highcharts.com/modules/export-data.js"></script>
+    <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+    <script src="https://code.highcharts.com/modules/boost.js"></script>
+    <script src="https://code.highcharts.com/modules/heatmap.js"></script>
+
+
+    <!-- jquery datatable include for data table   -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/2.10.2/umd/popper.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/progressbar.js/1.1.0/progressbar.min.js"></script>
+    
+    <script>
+        const rawData = {{ waferData|safe }};
+        // console.log("Raw Data:", rawData);
+        const rect_width = {{ rectWidth|safe }};
+        const rect_height = {{ rectHeight|safe }};
+
+        function drawWaferMap(data, containerId) {
+            const svgContainer = document.getElementById(containerId);
+            // console.log(containerId);
+            if (!svgContainer) {
+                console.error("Container not found:", containerId);
+                return;
+            }
+            const max_x = d3.max(data, ({ x }) => x);
+            const max_y = d3.max(data, ({ y }) => y);
+            const min_x = d3.min(data, ({ x }) => x);
+            const min_y = d3.min(data, ({ y }) => y);
+            // console.log(max_x)
+            const radius = 150;
+            const width = 4 * max_x + 1;
+            const height = 4 * max_y + 1;
+            console.log(`max_x: ${max_x}, max_y: ${max_y}, min_x: ${min_x}, min_y: ${min_y}`);
+            const svg = d3.create("svg")
+                .attr("viewBox", [-150, -150,300, 300]);
+
+                const c1 = svg.append("circle")
+                .style("fill", "gray")
+                .style("stroke", "black")
+                .style("stroke-width", 0.025)
+                .attr("r", radius + 0.2)
+                .attr("cx", 0.5)
+                .attr("cy", 0.5);
+
+                const c2 = svg.append("circle")
+                .style("fill", "gray")
+                .style("stroke", "black")
+                .style("stroke-width", 0.025)
+                .attr("r", radius)
+                .attr("cx", 0.5)
+                .attr("cy", 0.5);
+
+                const g = svg.append("g").selectAll("rect")
+                .data(data)
+                .join("rect")
+                .attr("x", ({x}) => x)
+                .attr("y", ({y}) => y)
+                .attr("width", rect_width )
+                .attr("height",rect_height)
+                .attr("fill", ({color}) => color)
+                .attr("stroke", "white")
+                .attr("stroke-width", 0.025)
+
+                svg.selectAll("rect")
+                    .data(data)
+                    .append("svg:title")
+                    .text(({mouseover}) => mouseover);
+
+                svg.call(d3.zoom()
+                    .extent([[0, 0], [200, 200]])
+                    .scaleExtent([1, 8])
+                    .on("zoom", zoomed));
+
+                function zoomed({ transform }) {
+                    g.attr("transform", transform);
+                    c1.attr("transform", transform);
+                    c2.attr("transform", transform);
+                }
+                svg.on("mousedown", function() {
+                    // Prevent drag
+                    d3.event.preventDefault();
+                });
+
+            document.getElementById(containerId).appendChild(svg.node());
+            // svgContainer.appendChild(svg.node());
+        }
+
+        // // Call the function to draw the wafer map
+        // drawWaferMap(rawData);
+        document.addEventListener("DOMContentLoaded", function() {
+            for (let i = 1; i <= 25; i++) {
+                // Assuming rawData is available globally or passed appropriately
+                drawWaferMap(rawData, `wafer-map-${i}`);
+            }
+        });
+
+    </script>
+{% endblock %}
+
+
+
+

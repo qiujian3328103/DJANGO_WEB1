@@ -13,7 +13,7 @@ from bokeh.layouts import column, row
 from bokeh.resources import CDN
 from django.views.generic import ListView
 
-from .models import Person, Commodity, FormData, YieldData
+from .models import Person, Commodity, FormData, YieldData, ProductList
 from django_tables2 import SingleTableView
 
 import os 
@@ -341,9 +341,9 @@ def get_data(request):
 
 
 def highchart_plot(request):
+    product_data = ProductList.objects.all() 
     context = {
-        'x_labels': "x",
-        'y_labels': "y"
+        'product_data': product_data 
     }
     return render(request, 'accounts/highchart.html', context)
     # return render(request, 'accounts/highchart.html')
@@ -457,7 +457,7 @@ def get_data_highchart(request):
         #     # Sort the datatable_data by the 'current_date' column
         #     datatable_data = datatable_data.sort_values(by='current_date')
         datatable_data = datatable_data.sort_values(by='current_date')
-        print(datatable_data)
+
         chart_data = {
         "highcharts_data": highcharts_data,
         "datatable_data": datatable_data.to_dict("records") if not datatable_data.empty else [],
@@ -465,6 +465,39 @@ def get_data_highchart(request):
 
 
     return JsonResponse(chart_data)
+
+
+def wafermap(request):
+    df_raw = pd.read_csv(r"C:\Users\Jian Qiu\Dropbox\pythonprojects\django_web1\KAMORTA.csv", index_col=False)
+    # Filter out rows based on "sort_test_flag"
+    df = df_raw[df_raw["sort_test_flag"] == "T"]
+    width = 7270.96*0.001
+    height = 6559.46*0.001
+
+    df['left'] = df['ucs_die_origin_x']*0.001 
+    df['right'] = df['ucs_die_origin_x']*0.001
+    df['bottom'] = df['ucs_die_origin_y'] *0.001
+    df['top'] = df['ucs_die_origin_y']*0.001
+    # Setting the width and height
+
+    # Map the ucs_die_origin_x and ucs_die_origin_y to x and y, and set color
+    df["color"] = "green"
+    
+    # Generate a list of dictionaries to match the format needed for D3.js
+    wafer_data = df.apply(lambda row: {
+        "x": row["left"],
+        "y": row["bottom"],
+        "color": row["color"],
+        "mouseover": f"Die_x: {int(row['sort_die_x'])}\nDie_y: {int(row['sort_die_y'])}"
+    }, axis=1).tolist()
+
+    context = {
+        'waferData': wafer_data,
+        'rectWidth': width,
+        'rectHeight': height,
+        'wafer_range': range(1, 26), 
+    }
+    return render(request, 'accounts/wafermap.html', context)
 
 
 def table_sparkline(request):
@@ -515,3 +548,16 @@ def get_sparkline_data(request):
         })
 
     return JsonResponse({'data': context})
+
+
+
+    # wafer_data = df[['left', 'right', 'bottom', 'top', 'color']].to_dict(orient='records')
+    # df = df.head(n=1200)
+    
+    # drop the na 
+    # wafer_data = []
+    # for _, row in df.iterrows():
+    #     x = (row['left'] + row['right']) / 2
+    #     y = (row['bottom'] + row['top']) / 2
+    #     color = row["color"]
+    #     wafer_data.append({'x': x, 'y': y, 'color': color})

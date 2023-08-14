@@ -85,7 +85,41 @@ def generate_fake_data():
     # Commit the changes and close the connection
     conn.commit()
     conn.close()
+
+def generate_fake_data_product():
+    """
+    
+    """
+
+    conn = sqlite3.connect(r'C:\Users\Jian Qiu\Dropbox\pythonprojects\django_web1\db.sqlite3')
+    # Create a cursor object to execute SQL commands
+    cursor = conn.cursor()
+
+    # Create the product_list table
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS product_list (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            product_id TEXT
+        )
+    ''')
+
+    # List of products to insert
+    product_list = ["Kamorta", "Jcala", "Magnus", "Hastings", "Hasting-Primep"]
+
+    # Insert the data into the table
+    for product in product_list:
+        cursor.execute('''
+            INSERT INTO product_list (product_id) VALUES (?)
+        ''', (product,))
+
+    # Commit the changes and close the connection
+    conn.commit()
+    conn.close()
+
+
+
 if __name__ == '__main__':
-    delete_table(table_name="yield_data")
-    delete_table(table_name="yield_table")
-    generate_fake_data()
+    # delete_table(table_name="yield_data")
+    # delete_table(table_name="yield_table")
+    # generate_fake_data()
+    generate_fake_data_product()

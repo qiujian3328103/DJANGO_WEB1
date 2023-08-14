@@ -72,9 +72,9 @@
                 </div>
                 <div class="col-md-3 mt-0 p-1">
                     <select id="productID" class="browser-default custom-select">
-                        <option value="Kamorta">Kamorta</option>
-                        <option value="Magnus">Magnus</option>
-                        <option value="Jcala">Jcala</option>
+                        {% for product in product_data %}
+                        <option value="{{ product.product_id }}">{{ product.product_id }}</option>
+                        {% endfor %}
                     </select>
                 </div>
                 <div class="col-md-2 mt-0 p-1">
@@ -122,6 +122,20 @@
             </div>
         </div>
         
+        <!-- create a table model -->
+        <div class="modal fade" id="detailsModal" tabindex="-1" aria-labelledby="detailsModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="detailsModalLabel">Details for <span id="modalDate"></span></h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <table id="detailsDataTable" class="display" style="width:100%"></table>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
  
@@ -248,7 +262,6 @@
         }
 
         function updateDataTable(data) {
-            console.log(data);
             var dataTableContainer = document.getElementById('dataTableContainer');
             var current_plot_type = plotTypeSelect.value;
             var dataTable;
@@ -262,9 +275,17 @@
             // Define columns based on the chart_type
             var columns;
             if (current_plot_type === 'bar' || current_plot_type === 'line') {
-                console.log(data);
                 columns = [
-                        { title: 'Date', data: 'current_date',  render: $.fn.dataTable.render.text()},
+                        { title: 'Date', data: 'current_date',
+                            render: function(data, type, row){
+                                // render link to click show modal 
+                                if (type === 'display') {
+                                    return '<a href="#" class="date-link">' + data + '</a>';
+                                }
+                                return data;
+                            },
+                        
+                        },
                         { title: 'Total Lots', data: 'total_lots' },
                         { title: 'Total Wafers', data: 'total_wafers' },
                         { title: 'Average Yield', data: 'avg_yield' }
@@ -277,6 +298,7 @@
             }
             console.log(current_plot_type);
             console.log('columns:', columns);
+
             $(dataTableContainer).DataTable({
                 destroy: true,
                 scrollY: "200px", // add a scroll bar  
@@ -286,6 +308,39 @@
                 paging: false,       // Disable pagination
                 info: false  // Disable info display
             });
+
+
+            $(document).ready(function() {
+                dataTable = $('#dataTableContainer').DataTable();
+            });
+
+            // Handle click event for date link
+            $('#dataTableContainer').on('click', '.date-link', function () {
+                console.log($(this));
+
+                var rowData = dataTable.row($(this).closest('tr')).data();
+                var modalDate = rowData.current_date;
+
+                $('#modalDate').text(modalDate);
+                $('#detailsModal').modal('show');
+
+                if ($.fn.dataTable.isDataTable('#detailsDataTable')) {
+                    $('#detailsDataTable').DataTable().destroy();
+                    }
+
+                var detailsDataTable = $('#detailsDataTable').DataTable({
+                    // ... options for the details DataTable ...
+                    data: rowData.details, // Replace with the actual details data
+                    columns: [
+                        { title: 'Root Lot ID', data: 'root_lot_id' },
+                        { title: 'Wafer ID', data: 'wafer_id' },
+                        { title: 'Yield', data: 'yield_value' },
+                        // ... other columns ...
+                    ],
+                    // ... other options ...
+                });
+            });
+
         }
 
         plotTypeSelect.addEventListener('change', updateChart);
