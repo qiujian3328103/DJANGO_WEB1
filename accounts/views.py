@@ -13,9 +13,9 @@ from bokeh.layouts import column, row
 from bokeh.resources import CDN
 from django.views.generic import ListView
 
-from .models import Person, Commodity, FormData, YieldData, ProductList
+from .models import Person, Commodity, FormData, YieldData, ProductList, BinDescription
 from django_tables2 import SingleTableView
-
+from django.core.cache import cache
 import os 
 import json 
 import pandas as pd 
@@ -342,8 +342,10 @@ def get_data(request):
 
 def highchart_plot(request):
     product_data = ProductList.objects.all() 
+    unique_bin_groups = BinDescription.objects.values_list('BIN_GROUP', flat=True).distinct()
     context = {
-        'product_data': product_data 
+        'product_data': product_data,
+        'unique_bin_groups': unique_bin_groups,
     }
     return render(request, 'accounts/highchart.html', context)
     # return render(request, 'accounts/highchart.html')
@@ -357,7 +359,22 @@ def get_data_highchart(request):
     product_id = request.GET.get('product_id')
     bin_types = request.GET.get('bin_types')
     group_date = request.GET.get('group_date')
+
+    # Create a cache key based on params
+    cache_key = f"yield_data_{start_date_str}_{end_date_str}_{product_id}"
     
+    # Try to get data from cache
+    data = cache.get(cache_key)
+
+    # If data is not cached, fetch from database and set in cache
+    if not data:
+        print("start to query again")
+        start_date = datetime.datetime.strptime(start_date_str, "%Y-%m-%d").date()
+        end_date = datetime.datetime.strptime(end_date_str, "%Y-%m-%d").date()
+        
+        data = YieldData.objects.filter(date__gte=start_date, date__lte=end_date, product_id=product_id)
+        cache.set(cache_key, data, 3600)  # Cache for 1 hour
+
     if plot_type == "bar":
         # vertical bar plot 
         plot_type == "column"

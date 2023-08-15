@@ -52,6 +52,15 @@ class YieldData(models.Model):
     class Meta:
         db_table = "yield_data"
 
+class BinDescription(models.Model):
+    PRODUCT_ID = models.CharField(max_length=255)
+    BIN_DESCRIPTION = models.CharField(max_length=255)
+    BIN = models.CharField(max_length=8)
+    BIN_GROUP = models.CharField(max_length=255)
+    class Meta:
+        db_table = "bin_description"
+
+
 class ProductList(models.Model):
     product_id = models.CharField(max_length=10)  # Adjust the max_length as needed
 

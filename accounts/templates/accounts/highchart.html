@@ -91,16 +91,9 @@
                 <div class="col-md-12 p-1">
                     <label>Select Bins</label>
                     <select id="binType" multiple="" class="label ui selection fluid dropdown">
-                        <option value="YIELD">YIELD</option>
-                        <option value="ATPG_INT">ATPG_INT</option>
-                        <option value="ATPG_SAF">ATPG_SAF</option>
-                        <option value="IDDQ">IDDQ</option>
-                        <option value="MBIST_HV">MBIST_HV</option>
-                        <option value="DC">DC</option>
-                        <option value="MBIST_LV">MBIST_LV</option>
-                        <option value="TDF">TDF</option>
-                        <option value="CONTINUITY">CONTINUITY</option>
-                        <option value="RX">RX</option>
+                        {% for group in unique_bin_groups %}
+                        <option value="{{ group }}">{{ group }}</option>
+                        {% endfor %}
                     </select>
                 </div>
             </div>
