@@ -497,7 +497,9 @@ def get_data_for_table_modal(request):
     return JsonResponse(list(data), safe=False)
 
 def wafermap(request):
-    df_raw = pd.read_csv(r"C:\Users\Jian Qiu\Dropbox\pythonprojects\django_web1\sample.csv", index_col=False)
+    # df_raw = pd.read_csv(r"C:\Users\Jian Qiu\Dropbox\pythonprojects\django_web1\sample.csv", index_col=False)
+    df_raw = pd.read_csv(r"/Users/JianQiu/Dropbox/pythonprojects/django_web1/sample.csv", index_col=False)
+    
     # Filter out rows based on "sort_test_flag"
     df = df_raw[df_raw["sort_test_flag"] == "T"]
     width = 7270.96*0.001
