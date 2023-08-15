@@ -19,5 +19,6 @@ urlpatterns = [
     path('delete_entry/', views.delete_entry, name='delete_entry'),
     path('table_sparkline/', views.table_sparkline, name="table_sparkline"),
     path('data_json_sparkline/', views.get_sparkline_data, name='data_json_sparkline'),
+    path('get_yield_data_for_modal/', views.get_data_for_table_modal, name='get_yield_data_for_modal')
     
 ]

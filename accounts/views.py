@@ -483,6 +483,18 @@ def get_data_highchart(request):
 
     return JsonResponse(chart_data)
 
+def get_data_for_table_modal(request):
+    product_id = request.GET.get('product_id')
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+    print(product_id, start_date, end_date)
+    # query the data from the datatable 
+    data = YieldData.objects.filter(
+        product_id=product_id,
+        date__range=[start_date, end_date]
+    ).values() 
+
+    return JsonResponse(list(data), safe=False)
 
 def wafermap(request):
     df_raw = pd.read_csv(r"C:\Users\Jian Qiu\Dropbox\pythonprojects\django_web1\sample.csv", index_col=False)
