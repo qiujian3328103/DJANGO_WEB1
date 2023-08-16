@@ -107,9 +107,13 @@ function updateChart() {
     (option) => option.value
   );
 
+
+  // fetch(
+  //   yieldDataURL + '/?plot_type=' + plotTypeSelect.value + '&group_date=' + group_date + '&start_date=' + startDate + '&end_date=' + endDate + '&bin_types=' + selectedBinTypes + '&product_id=' + product_id
+  // )
   fetch(
     `/get_data_highchart/?plot_type=${plotTypeSelect.value}&group_date=${group_date}&start_date=${startDate}&end_date=${endDate}&bin_types=${selectedBinTypes}&product_id=${product_id}`
-  )
+    )
     .then((response) => response.json())
     .then((data) => {
       // pass the data from view to js function to create highcharts
@@ -120,17 +124,20 @@ function updateChart() {
 
 // update the DataTable
 function updateDataTable(data) {
-  var dataTableContainer = document.getElementById("dataTableContainer");
-  var current_plot_type = plotTypeSelect.value;
-  var dataTable;
-
   // Destroy existing DataTable if it exists
   if ($.fn.DataTable.isDataTable(dataTableContainer)) {
     dataTable = $(dataTableContainer).DataTable();
     dataTable.clear().destroy();
   }
+  
+  var dataTableContainer = document.getElementById("dataTableContainer");
+  var current_plot_type = plotTypeSelect.value;
+  var dataTable;
+  console.log(data);
+
   // Create or update DataTable using the 'data' parameter
   // Define columns based on the chart_type
+  console.log("Current plot type", current_plot_type)
   var columns;
   if (current_plot_type === "bar" || current_plot_type === "line") {
     columns = [
@@ -150,12 +157,29 @@ function updateDataTable(data) {
       { title: "Average Yield", data: "avg_yield" },
     ];
   } else {
+    console.log("process here");
     // Define columns for other chart types if needed
-    columns = [];
+      // Create columns dynamically based on the first data item keys
+      Object.keys(data[0]).map(key => {
+        // var show_data = {"title":key, "data":key, "function":function(data, type, row){return data}};
+        // console.log(show_data);
+        console.log("pass");
+        console.log(key);
+      });
+      columns = Object.keys(data[0]).map(key => {
+        return {
+            title: key,
+            data: key
+        };
+    });
   }
-//   console.log(current_plot_type);
-//   console.log("columns:", columns);
 
+  console.log("------------------------------------------------------------------------")
+  console.log(columns);
+  console.log("------------------------------------------------------------------------")
+
+
+  // fill the data and set the datatable 
   $(dataTableContainer).DataTable({
     destroy: true,
     scrollY: "200px", // add a scroll bar

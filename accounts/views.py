@@ -16,12 +16,13 @@ from django.views.generic import ListView
 from .models import Person, Commodity, FormData, YieldData, ProductList, BinDescription
 from django_tables2 import SingleTableView
 from django.core.cache import cache
+from django.views.decorators.cache import cache_page
 import os 
 import json 
 import pandas as pd 
 import datetime 
 from .forms import FormDataForm
-
+from .query import get_filtered_data
 
 # https://blog.csdn.net/weixin_42289273/article/details/109408689
 # https://www.twblogs.net/a/5c10ec5abd9eee5e40bb1105
@@ -350,7 +351,6 @@ def highchart_plot(request):
     return render(request, 'accounts/highchart.html', context)
     # return render(request, 'accounts/highchart.html')
 
-
 def get_data_highchart(request):
     # Get plot type and date range filter parameters from AJAX request
     plot_type = request.GET.get('plot_type', 'bar')
@@ -360,20 +360,14 @@ def get_data_highchart(request):
     bin_types = request.GET.get('bin_types')
     group_date = request.GET.get('group_date')
 
-    # Create a cache key based on params
-    cache_key = f"yield_data_{start_date_str}_{end_date_str}_{product_id}"
-    
-    # Try to get data from cache
-    data = cache.get(cache_key)
+    cache_key = f"data_highchart_{product_id}_{start_date_str}_{end_date_str}"
+    df_raw = cache.get(cache_key)
 
-    # If data is not cached, fetch from database and set in cache
-    if not data:
-        print("start to query again")
-        start_date = datetime.datetime.strptime(start_date_str, "%Y-%m-%d").date()
-        end_date = datetime.datetime.strptime(end_date_str, "%Y-%m-%d").date()
-        
-        data = YieldData.objects.filter(date__gte=start_date, date__lte=end_date, product_id=product_id)
-        cache.set(cache_key, data, 3600)  # Cache for 1 hour
+    if df_raw is None:
+        print("test start cache")
+        df_raw = get_filtered_data(product_id=product_id, start_date=start_date_str, end_date=end_date_str)
+        cache.set(cache_key, df_raw, 3600)
+        print(df_raw)
 
     if plot_type == "bar":
         # vertical bar plot 
@@ -387,19 +381,15 @@ def get_data_highchart(request):
     else:
         bin_types_list = bin_types.split(",")
     
-    data = YieldData.objects.all()
-    
     start_date = pd.to_datetime(start_date_str)
-    data = data.filter(date__gte=start_date)
-
     
     end_date = pd.to_datetime(end_date_str)
-    data = data.filter(date__lte=end_date)
+ 
 
-    # Convert data to a Pandas DataFrame
-    df = pd.DataFrame(list(data.values()))
+    df = df_raw
 
     # fitler the data 
+    # print(product_id)
     df = df[df['product_id'] == product_id]
 
     # convert the data base on the select date 
@@ -410,12 +400,11 @@ def get_data_highchart(request):
         df['current_date'] = df['date'].dt.strftime('%Y-%W')
     elif group_date == "Quarter":
         df['current_date'] = df['date'].dt.to_period('Q').dt.strftime('%Y-Q%q')
-    
+
     # Filter data based on date range
     filtered_data = df[(df['date'] >= start_date) & (df['date'] <= end_date)]
     
-    
-    
+    print(filtered_data.head(n=50))
     # based on the plot type to decide the plot 
     if plot_type == "bin_group":
         # select bin_group, use the bin_types_list to filter the the customer select bin_types 
@@ -436,10 +425,16 @@ def get_data_highchart(request):
             'series': series_data,
             'chart_type': plot_type
         }
-        datatable_data = []
+        # Pivot the DataFrame
+        datatable_data = filtered_data.pivot_table(index='current_date', columns='bin_type', values='yield_value', aggfunc='mean')
+        # Reset the index
+        datatable_data = datatable_data.reset_index()
+        datatable_data = datatable_data.sort_values(by='current_date')
+
+        # Prepare the data in a format suitable for DataTables
         chart_data = {
-        "highcharts_data": highcharts_data,
-        "datatable_data": datatable_data,
+            "highcharts_data": highcharts_data,
+            "datatable_data": datatable_data.to_dict("records") if not datatable_data.empty else [],
         }
 
     else:
@@ -462,17 +457,7 @@ def get_data_highchart(request):
             )
             .reset_index()
         )
-        # print(group_date)
-        # if group_date == "Month":
-        #     # Convert 'current_date' to datetime
-        #     datatable_data['current_date'] = pd.to_datetime(datatable_data['current_date'], format='%Y-%b')
-        #     # Sort DataFrame by 'current_date'
-        #     datatable_data = datatable_data.sort_values(by='current_date', key = pd.to_datetime)
-        #     # Convert 'current_date' back to string format
-        #     datatable_data['current_date'] = datatable_data['current_date'].dt.strftime('%Y-%b')
-        # else:
-        #     # Sort the datatable_data by the 'current_date' column
-        #     datatable_data = datatable_data.sort_values(by='current_date')
+
         datatable_data = datatable_data.sort_values(by='current_date')
 
         chart_data = {
@@ -482,6 +467,7 @@ def get_data_highchart(request):
 
 
     return JsonResponse(chart_data)
+
 
 def get_data_for_table_modal(request):
     product_id = request.GET.get('product_id')
@@ -495,6 +481,7 @@ def get_data_for_table_modal(request):
     ).values() 
 
     return JsonResponse(list(data), safe=False)
+
 
 def wafermap(request):
     # df_raw = pd.read_csv(r"C:\Users\Jian Qiu\Dropbox\pythonprojects\django_web1\sample.csv", index_col=False)

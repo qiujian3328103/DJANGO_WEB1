@@ -1,5 +1,8 @@
 <!-- https://mdbootstrap.com/docs/standard/extended/multiselect/ -->
 <!-- https://colorlib.com/wp/template/multiselect-02/ -->
+<!-- 
+  use the pure css to create the accordion and accrdion group. current bootstrap cannot figure out the correct version 
+ -->
 {% extends "accounts/base.html" %}
 {% load static %}
 
@@ -87,14 +90,73 @@
         background-color: #f2f2f2;
     }
     
+    .hidecontent {
+    	display: none;
+	}
+	
+	#myaccordion label {
+		box-shadow:0 0 20px #d4d4d4;
+		display: block;    
+		padding: 8px 22px;
+		margin: 20px 0px 1px 0px;
+		cursor: pointer;
+		background: #5f75a4;
+		color: #FFF;
+		transition: ease .5s;
+	}
+	#myaccordion label:hover {
+		background: #5f75ff;
+	}
+	.content {
+		box-shadow:0 0 20px #d4d4d4;
+		background: #ffff;
+		padding: 10px 25px;
+		border: 1px solid #d4d4d4;
+		margin: -1 0 0 0;
+	}
+	#myaccordion input:checked + label + .content {
+		display: block;
+		webkit-animation: fadeIn 0.5s ease-out;
+		-moz-animation: fadeIn 0.5s ease-out;
+		-o-animation: fadeIn 0.5s ease-out;
+		animation: fadeIn 0.5s ease-out;
+	}
+	@-webkit-keyframes fadeIn {
+		0% {
+			display: none;
+			opacity: 0;
+		}
+		1% {
+			display: block;
+			opacity: 0;
+		}
+		100% {
+			display: block;
+			opacity: 1;
+		}
+	}
 </style>
 {% endblock %}
 
 {% block title %}Highcharts Dashboard{% endblock %}
 
 {% block content %}
+
     <div class="container mt-4">
         <h2>Highcharts Dashboard</h2>
+
+        <div id="myaccordion">
+          <input type="checkbox" id="accordion1" class="hidecontent"/>
+          <label for="accordion1">Accordion One Heading</label>
+          <div class="content hidecontent">
+            <select id="plotTypeSelect2" class="browser-default custom-select">
+              <option value="bar">Bar</option>
+              <option value="line">Line</option>
+              <option value="bin_group">Bin Group</option>
+          </select>
+          </div>
+        </div>
+
         <div class="widget_box p-3 rounded" style="background-color: #f8f9fa;">
             <div class="row align-items-center">
                 <div class="col-md-2 mt-0 p-1">
