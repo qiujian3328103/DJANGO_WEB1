@@ -1,7 +1,8 @@
 import sqlite3 
 import pandas as pd
 def get_filtered_data(product_id, start_date, end_date):
-    conn = sqlite3.connect(r'C:\Users\Jian Qiu\Dropbox\pythonprojects\django_web1\db.sqlite3')  # Replace with the actual path to your SQLite database
+    # conn = sqlite3.connect(r'C:\Users\Jian Qiu\Dropbox\pythonprojects\django_web1\db.sqlite3')  # Replace with the actual path to your SQLite database
+    conn = sqlite3.connect(r"/Users/JianQiu/Dropbox/pythonprojects/django_web1/db.sqlite3")
     cursor = conn.cursor()
 
     # SQL query to retrieve filtered data

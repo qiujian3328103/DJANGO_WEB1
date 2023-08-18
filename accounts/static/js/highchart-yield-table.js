@@ -1,10 +1,3 @@
-var plotTypeSelect = document.getElementById("plotTypeSelect");
-var startDatePicker = document.getElementById("startDatePicker");
-var endDatePicker = document.getElementById("endDatePicker");
-var groupDateSelect = document.getElementById("groupDateSelect");
-var chart; // Variable to store the Highcharts chart instance
-
-
 /** 
  *  for the const yieldDataURL only works in the Django template, the JS cannot read the {{}} tag
  *  to solve the issue, need to pass the url from the html into the js to do that, need to fetch the 
@@ -15,6 +8,12 @@ var chart; // Variable to store the Highcharts chart instance
  *  const yieldDataURL = "{% url 'get_yield_data_for_modal' %}";
  * 
  * **/
+
+var plotTypeSelect = document.getElementById("plotTypeSelect");
+var startDatePicker = document.getElementById("startDatePicker");
+var endDatePicker = document.getElementById("endDatePicker");
+var groupDateSelect = document.getElementById("groupDateSelect");
+var chart; // Variable to store the Highcharts chart instance
 
 const yieldDataURL = document.getElementById('yieldDataURL').getAttribute('data-url');
 
@@ -27,25 +26,59 @@ if (plotTypeSelect.value === "bar") {
   var plot_type = "column";
 }
 
+// update the binType based on the product id 
+function updateBinTypeOptions() {
+  var selectedProductID = productID.value;
+  fetch(`/get_bin_groups/?product_id=${selectedProductID}`)
+      .then(response => response.json())
+      .then(data => {
+          binType.innerHTML = "";  // Clear current options
+          data.forEach(binGroup => {
+              var option = document.createElement("option");
+              option.value = binGroup;
+              option.text = binGroup;
+              binType.appendChild(option);
+          });
+      });
+}
+
+productID.addEventListener("change", function() {
+  updateBinTypeOptions();
+  updateChart();
+});
+
+
+
 function createChart(data) {
+  console.log("#######################################")
   // Destroy previous chart instance if exists
+  var by_date = document.getElementById("groupDateSelect").value;
+  console.log(by_date);
   if (chart) {
     chart.destroy();
   }
   if (data.chart_type === "line" || data.chart_type === "bar") {
     // console.log(data.chart_type);
     // console.log(data.x_labels);
+    // convert the bar plot to column which is vertical plot 
+    if (data.chart_type === "bar"){
+        var plot_type_select = "column"
+    }else{
+      var plot_type_select = "line"
+    }
+    console.log("-----------------***********************")
+    console.log(plot_type_select);
     Highcharts.chart("chartContainer", {
       chart: {
-        type: data.chart_type,
+        type: plot_type_select,
       },
       title: {
-        text: "Average Yield Data by Month",
+        text: `Average Yield Data by ${by_date}`,
       },
       xAxis: {
         categories: data.x_labels,
         title: {
-          text: "Month",
+          text: by_date,
         },
       },
       yAxis: {
@@ -73,7 +106,7 @@ function createChart(data) {
         type: "column",
       },
       title: {
-        text: "Average Yield Data by Bin Type and Current Date",
+        text: "Average Yield Data",
       },
       xAxis: {
         categories: data.bin_types,
@@ -124,60 +157,39 @@ function updateChart() {
 
 // update the DataTable
 function updateDataTable(data) {
-  // Destroy existing DataTable if it exists
-  if ($.fn.DataTable.isDataTable(dataTableContainer)) {
-    dataTable = $(dataTableContainer).DataTable();
-    dataTable.clear().destroy();
+
+  if ($.fn.DataTable.isDataTable('#dataTableContainer')) {
+    console.log("confirmed there is a table --------------------")
+    $('#dataTableContainer').DataTable().destroy();
   }
   
   var dataTableContainer = document.getElementById("dataTableContainer");
   var current_plot_type = plotTypeSelect.value;
   var dataTable;
-  console.log(data);
+  // console.log(data);
 
-  // Create or update DataTable using the 'data' parameter
   // Define columns based on the chart_type
   console.log("Current plot type", current_plot_type)
   var columns;
-  if (current_plot_type === "bar" || current_plot_type === "line") {
-    columns = [
-      {
-        title: "Date",
-        data: "current_date",
-        render: function (data, type, row) {
-          // render link to click show modal
-          if (type === "display") {
-            return '<a href="#" class="date-link">' + data + "</a>";
-          }
-          return data;
-        },
-      },
-      { title: "Total Lots", data: "total_lots" },
-      { title: "Total Wafers", data: "total_wafers" },
-      { title: "Average Yield", data: "avg_yield" },
-    ];
-  } else {
-    console.log("process here");
-    // Define columns for other chart types if needed
-      // Create columns dynamically based on the first data item keys
-      Object.keys(data[0]).map(key => {
-        // var show_data = {"title":key, "data":key, "function":function(data, type, row){return data}};
-        // console.log(show_data);
-        console.log("pass");
-        console.log(key);
-      });
-      columns = Object.keys(data[0]).map(key => {
-        return {
-            title: key,
-            data: key
-        };
-    });
+  let allKeys = Object.keys(data[0]);
+  if (!data.every(item => JSON.stringify(Object.keys(item)) === JSON.stringify(allKeys))) {
+    console.error("Data structure is inconsistent!");
+    return;  // don't proceed with DataTables initialization
   }
-
-  console.log("------------------------------------------------------------------------")
-  console.log(columns);
-  console.log("------------------------------------------------------------------------")
-
+  
+  columns = allKeys.map(key => {
+    return {
+      title: key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' '),
+      data: key,
+      render: function (data, type, row) {
+        // render link to click show modal
+        if (type === "display" && key === "current_date" ) {
+          return '<a href="#" class="date-link">' + data + "</a>";
+        }
+        return data;
+      },
+    }
+  })
 
   // fill the data and set the datatable 
   $(dataTableContainer).DataTable({
@@ -188,10 +200,6 @@ function updateDataTable(data) {
     searching: false, // Disable search bar
     paging: false, // Disable pagination
     info: false, // Disable info display
-  });
-
-  $(document).ready(function () {
-    dataTable = $("#dataTableContainer").DataTable();
   });
 
   // Handle click event for date link and show modal
@@ -264,15 +272,12 @@ function updateDataTable(data) {
 //         // Open the URL in a new tab
 //         window.open(newTabURL, '_blank');
 //     });
-
 }
-
-
 
 plotTypeSelect.addEventListener("change", updateChart);
 startDatePicker.addEventListener("change", updateChart);
 endDatePicker.addEventListener("change", updateChart);
-binType.addEventListener("change", updateChart);
+// binType.addEventListener("change", updateChart);
 productID.addEventListener("change", updateChart);
 groupDateSelect.addEventListener("change", updateChart);
 

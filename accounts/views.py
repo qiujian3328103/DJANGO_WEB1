@@ -350,6 +350,11 @@ def highchart_plot(request):
     }
     return render(request, 'accounts/highchart.html', context)
     # return render(request, 'accounts/highchart.html')
+    
+def get_bin_groups_for_product(request):
+    product_id = request.GET.get('product_id')
+    bin_groups = BinDescription.objects.filter(PRODUCT_ID=product_id).values_list('BIN_GROUP', flat=True).distinct()
+    return JsonResponse(list(bin_groups), safe=False)
 
 def get_data_highchart(request):
     # Get plot type and date range filter parameters from AJAX request
@@ -568,6 +573,8 @@ def get_sparkline_data(request):
     return JsonResponse({'data': context})
 
 
+def list_view(request):
+    return render(request, 'accounts/list.html')
 
     # wafer_data = df[['left', 'right', 'bottom', 'top', 'color']].to_dict(orient='records')
     # df = df.head(n=1200)

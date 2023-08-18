@@ -1,0 +1,175 @@
+<!-- https://mdbootstrap.com/docs/standard/extended/multiselect/ -->
+<!-- https://colorlib.com/wp/template/multiselect-02/ -->
+<!-- 
+  use the pure css to create the accordion and accrdion group. current bootstrap cannot figure out the correct version 
+ -->
+ {% extends "accounts/base.html" %}
+ {% load static %}
+ 
+ {% block extra_css %}
+ <style>
+        .list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            padding: 10px;
+            border: 1px solid #ccc;
+        }
+
+        .list-item .icon {
+            width: 20px;
+            height: 20px;
+            background-color: red; /* You can change this color */
+        }
+
+        .sub-items {
+            display: none;
+            padding-left: 40px;
+        }
+
+        .sub-items .list-item {
+            background-color: #f5f5f5;
+        }
+
+        .tree-view ul {
+            list-style-type: none;
+            padding-left: 20px;
+        }
+
+        .tree-view li {
+            margin: 8px 0;
+            cursor: pointer;
+            background-color: #f5f5f5; /* Background color for each item */
+        }
+
+        .tree-view .node-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px;
+        }
+
+        .tree-view .icon {
+            width: 20px;
+            height: 20px;
+            background-color: red; /* Change as needed */
+            margin-right: 10px;
+        }
+
+        .tree-view .triangle {
+            width: 16px;
+            height: 16px;
+            background-image: url('https://placeholder.pics/svg/16x16/000000/FFFFFF?text=▶');;
+            margin-right: 10px;
+            transition: transform 0.3s; /* Smooth rotation */
+        }
+
+        .tree-view .expanded .triangle {
+            transform: rotate(90deg); /* Rotate favicon when expanded */
+        }
+
+        .tree-view .children {
+            display: none;
+        }
+
+        .tree-view .expanded .children {
+            display: block;
+        }
+ </style>
+ {% endblock %}
+ 
+ {% block title %}Highcharts Dashboard{% endblock %}
+ 
+ {% block content %}
+ 
+     <div class="container mt-4">
+         <h2>TETS LIST</h2>
+
+         <div id="myaccordion">
+           <input type="checkbox" id="accordion1" class="hidecontent"/>
+           <label for="accordion1">Accordion One Heading</label>
+           <div class="content hidecontent">
+             <select id="plotTypeSelect2" class="browser-default custom-select">
+               <option value="bar">Bar</option>
+               <option value="line">Line</option>
+               <option value="bin_group">Bin Group</option>
+           </select>
+           </div>
+         </div>
+
+        <div class="tree-view">
+            <ul>
+                <li class="node" onclick="toggleNode(this)">
+                    <div class="node-content">
+                        <div class="triangle"></div>
+                        <div class="icon"></div>
+                        <div class="name">Item 1</div>
+                        <div class="value">Value 1</div>
+                    </div>
+                    <ul class="children">
+                        <li class="node">
+                            <div class="node-content">
+                                <div class="icon"></div>
+                                <div class="name">Subitem 1.1</div>
+                                <div class="value">Value 1.1</div>
+                            </div>
+                        </li>
+                        <li class="node">
+                            <div class="node-content">
+                                <div class="icon"></div>
+                                <div class="name">Subitem 1.1</div>
+                                <div class="value">Value 1.1</div>
+                            </div>
+                        </li>
+                        <li class="node">
+                            <div class="node-content">
+                                <div class="icon"></div>
+                                <div class="name">Subitem 1.2</div>
+                                <div class="value">Value 1.1</div>
+                            </div>
+                        </li>
+                        <li class="node">
+                            <div class="node-content">
+                                <div class="icon"></div>
+                                <div class="name">Subitem 1.2</div>
+                                <div class="value">Value 1.1</div>
+                            </div>
+                        </li>
+                        <!-- Add more subitems as needed -->
+                    </ul>
+                </li>
+                <!-- Add more main items as needed -->
+            </ul>
+        </div>
+
+     </div>
+ 
+  
+ 
+     <!-- Mutliselect import the mutli select dorpdown widget  -->
+     <script>
+        // function toggleSubItems(element) {
+        //     const subItems = element.querySelector('.sub-items');
+        //     if (subItems.style.display === 'none') {
+        //         subItems.style.display = 'block';
+        //     } else {
+        //         subItems.style.display = 'none';
+        //     }
+        // }
+
+        function toggleNode(element) {
+            if (element.classList.contains('expanded')) {
+                element.classList.remove('expanded');
+            } else {
+                element.classList.add('expanded');
+            }
+        }
+    </script>
+ 
+ {% endblock %}
+ 
+
+ 
+ 
+ 

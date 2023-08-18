@@ -123,9 +123,13 @@ def create_bin_description_table(table_name):
     Args:
         table_name (_type_): _description_
     """
-    df = pd.read_csv(r"C:\Users\Jian Qiu\Dropbox\pythonprojects\django_web1\bin_description.csv", index_col=False)
+    # df = pd.read_csv(r"C:\Users\Jian Qiu\Dropbox\pythonprojects\django_web1\bin_description.csv", index_col=False)
+    # # Create an SQLite database connection
+    # conn = sqlite3.connect(r'C:\Users\Jian Qiu\Dropbox\pythonprojects\django_web1\db.sqlite3')
+    df = pd.read_csv(r"/Users/JianQiu/Dropbox/pythonprojects/django_web1/bin_description.csv", index_col=False)
     # Create an SQLite database connection
-    conn = sqlite3.connect(r'C:\Users\Jian Qiu\Dropbox\pythonprojects\django_web1\db.sqlite3')
+    conn = sqlite3.connect(r'/Users/JianQiu/Dropbox/pythonprojects/django_web1/db.sqlite3')
+
 
     # Save the DataFrame to the SQLite database with the table name "bin_description"
     df.to_sql(table_name, conn, if_exists='replace', index=True)
