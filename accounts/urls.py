@@ -1,6 +1,6 @@
 from django.urls import path
 from . import views 
-
+from django.views.generic import TemplateView
 
 urlpatterns = [
     # path('', views.home, name='home'),
@@ -21,5 +21,7 @@ urlpatterns = [
     path('data_json_sparkline/', views.get_sparkline_data, name='data_json_sparkline'),
     path('get_yield_data_for_modal/', views.get_data_for_table_modal, name='get_yield_data_for_modal'),
     path('list_view/', views.list_view, name='list_view'),
+    # path('list_view/',TemplateView.as_view(template_name="test.html"),name='list_view'),
     path('get_bin_groups/', views.get_bin_groups_for_product, name='get_bin_groups_for_product'),
+
 ]

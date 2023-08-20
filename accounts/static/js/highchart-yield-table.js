@@ -14,6 +14,7 @@ var startDatePicker = document.getElementById("startDatePicker");
 var endDatePicker = document.getElementById("endDatePicker");
 var groupDateSelect = document.getElementById("groupDateSelect");
 var chart; // Variable to store the Highcharts chart instance
+// var detailsDataTable; // Define it at the top level
 
 const yieldDataURL = document.getElementById('yieldDataURL').getAttribute('data-url');
 
@@ -50,24 +51,19 @@ productID.addEventListener("change", function() {
 
 
 function createChart(data) {
-  console.log("#######################################")
   // Destroy previous chart instance if exists
   var by_date = document.getElementById("groupDateSelect").value;
-  console.log(by_date);
   if (chart) {
     chart.destroy();
   }
   if (data.chart_type === "line" || data.chart_type === "bar") {
-    // console.log(data.chart_type);
-    // console.log(data.x_labels);
-    // convert the bar plot to column which is vertical plot 
+    // if bar chart use the column to make it vertical bar 
     if (data.chart_type === "bar"){
         var plot_type_select = "column"
     }else{
       var plot_type_select = "line"
     }
-    console.log("-----------------***********************")
-    console.log(plot_type_select);
+    // define the highcharts 
     Highcharts.chart("chartContainer", {
       chart: {
         type: plot_type_select,
@@ -139,17 +135,14 @@ function updateChart() {
     binType.selectedOptions,
     (option) => option.value
   );
-
-
-  // fetch(
-  //   yieldDataURL + '/?plot_type=' + plotTypeSelect.value + '&group_date=' + group_date + '&start_date=' + startDate + '&end_date=' + endDate + '&bin_types=' + selectedBinTypes + '&product_id=' + product_id
-  // )
+  
+  // AJAX to fetch the current selection then post to views.py to do the data process 
   fetch(
     `/get_data_highchart/?plot_type=${plotTypeSelect.value}&group_date=${group_date}&start_date=${startDate}&end_date=${endDate}&bin_types=${selectedBinTypes}&product_id=${product_id}`
     )
     .then((response) => response.json())
     .then((data) => {
-      // pass the data from view to js function to create highcharts
+      // pass the data from views.py processed data to js function to create highcharts
       createChart(data.highcharts_data);
       updateDataTable(data.datatable_data);
     });
@@ -157,26 +150,28 @@ function updateChart() {
 
 // update the DataTable
 function updateDataTable(data) {
-
+  // remove the dataTable if exist 
   if ($.fn.DataTable.isDataTable('#dataTableContainer')) {
-    console.log("confirmed there is a table --------------------")
+    $('#dataTableContainer').off("click", ".date-link");
+    console.log("test if there is a datatbale ")
     $('#dataTableContainer').DataTable().destroy();
   }
   
+  // if ($.fn.DataTable.isDataTable('#detailsDataTable')) {
+  //   console.log("there is a datatable");
+  //   $('#detailsDataTable').off("click", ".lot-link"); 
+  //   $('#detailsDataTable').DataTable().destroy();
+  // }
+
   var dataTableContainer = document.getElementById("dataTableContainer");
   var current_plot_type = plotTypeSelect.value;
   var dataTable;
-  // console.log(data);
 
-  // Define columns based on the chart_type
   console.log("Current plot type", current_plot_type)
   var columns;
   let allKeys = Object.keys(data[0]);
-  if (!data.every(item => JSON.stringify(Object.keys(item)) === JSON.stringify(allKeys))) {
-    console.error("Data structure is inconsistent!");
-    return;  // don't proceed with DataTables initialization
-  }
   
+  // Define columns based on the chart_type
   columns = allKeys.map(key => {
     return {
       title: key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' '),
@@ -191,8 +186,15 @@ function updateDataTable(data) {
     }
   })
 
+
+  // ************************** import step *********************************//
+  // Clear the table body and header to to ensure that the old data is removed.
+  $('#dataTableContainer thead').empty();
+  $('#dataTableContainer tbody').empty();
+  // $('#detailsDataTable thead').empty();
+  // $('#detailsDataTable tbody').empty();
   // fill the data and set the datatable 
-  $(dataTableContainer).DataTable({
+  dataTable = $(dataTableContainer).DataTable({
     destroy: true,
     scrollY: "200px", // add a scroll bar
     data: data, // Replace with actual data from 'data' object
@@ -207,24 +209,22 @@ function updateDataTable(data) {
     // console.log($(this));
 
     var rowData = dataTable.row($(this).closest("tr")).data();
+    // console.log(rowData);
     var modalDate = rowData.current_date;
 
     // get the current selection status and use AJAX to fetch back to views.py
     var product_id = document.getElementById("productID").value;
     var start_date = document.getElementById("startDatePicker").value;
     var end_date = document.getElementById("endDatePicker").value;
-
+    
     // AJAX request to get the yield data
     $.get(
       yieldDataURL,
       { product_id: product_id, start_date: start_date, end_date: end_date },
       function (data) {
         // delete the modal if modal already created
-        if ($.fn.dataTable.isDataTable("#detailsDataTable")) {
-          $("#detailsDataTable").DataTable().destroy();
-        }
-        console.log("AJAX data:");
-        console.log(data);
+        // remove the modal datatable if exist 
+
         var detailsDataTable = $("#detailsDataTable").DataTable({
           // ... options for the details DataTable ...
           data: data, // Replace with the actual details data
@@ -243,9 +243,7 @@ function updateDataTable(data) {
             { title: "Yield", data: "yield_value" },
             { title: "PRODUCT_ID", data: "product_id" },
             { title: "BIN TYPE", data: "bin_type" },
-            // ... other columns ...
           ],
-          // ... other options ...
           searching: false, // Disable search bar
           info: false, // Disable info display
           scrollY: "200px", // add a scroll bar
@@ -256,22 +254,47 @@ function updateDataTable(data) {
     );
   });
 
-  
-//   $(document).ready(function () {
-//     dataTable_details = $("#detailsTableContainer").DataTable();
-//   });
-//     // Handle click event for lot link and direct it another page 
-//     $("#detailsTableContainer").on("click", ".lot-link", function () {
-//         var rowData = dataTable_details.row($(this).closest("tr")).data();
-//         console.log(rowData);
-//         var rootLotId = rowData.root_lot_id; // assuming root_lot_id is the key for the Root Lot ID
 
-//         // Construct the URL. If Root Lot ID is a parameter in the URL
-//         var newTabURL = `http://127.0.0.1:8000/wafermap/`;  // adjust this based on how your backend is set up
+  $("#detailsDataTable").on("click", ".lot-link", function (event) {
+    event.preventDefault(); // Prevent the default action of the hyperlink
+    /*
+     * detailsDataTable.row  method being undefined is likely because of the scope of the 
+     * detailsDataTable variable. In updateDataTable function,  define detailsDataTable as
+     * a local variable: means that the detailsDataTable variable is only accessible within
+     * the updateDataTable function. When you try to access it in the event handler for the 
+     * .lot-link click event, it's out of scope, and thus, it's undefined.
+     * 
+     * // Fetch the data for the row that was clicked
+     * var rowData = detailsDataTable.row($(this).closest("tr")).data();
+     * use a more direct approach with jQuery.
+     * 
+     * var $row = $(this).closest("tr");
+     * // Extract data directly from the row's cells
+     * var rowData = {
+     * root_lot_id: $row.find("td:eq(0)").text(),
+     * wafer_id: $row.find("td:eq(1)").text(),
+     * yield_value: $row.find("td:eq(2)").text(),
+     * product_id: $row.find("td:eq(3)").text(),
+     * bin_type: $row.find("td:eq(4)").text()
+     * }
+     * 
+     * Downside for this method is that, it can only use on the fix structure table, 
+     * if data is dynamic, then cannot determine each columns value. 
+     * 
+     */
 
-//         // Open the URL in a new tab
-//         window.open(newTabURL, '_blank');
-//     });
+
+    // Get the parent row of the clicked link
+    var $row = $(this).closest("tr");
+    // Extract data directly from the row's cells
+    var root_lot_id = $row.find("td:eq(0)").text();
+    console.log(root_lot_id);
+
+    // Redirect to the desired URL use '_blank' to open a new tab. 
+    var newTabURL = `http://127.0.0.1:8000/wafermap/`;
+    window.open(newTabURL, '_blank');
+    // window.location.href = `http://127.0.0.1:8000/wafermap/`;
+  });
 }
 
 plotTypeSelect.addEventListener("change", updateChart);
@@ -293,3 +316,5 @@ endDatePicker.value = defaultEndDate;
 
 // Call updateChart initially to populate the initial data
 updateChart();
+
+

@@ -53,6 +53,7 @@ class YieldData(models.Model):
         db_table = "yield_data"
 
 class BinDescription(models.Model):
+    index = models.CharField(max_length=5, primary_key=True)
     PRODUCT_ID = models.CharField(max_length=255)
     BIN_DESCRIPTION = models.CharField(max_length=255)
     BIN = models.CharField(max_length=8)

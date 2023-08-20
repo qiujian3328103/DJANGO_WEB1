@@ -1,8 +1,6 @@
+{% extends "accounts/base.html" %}
 {% load static %}
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Form Data DataTable</title>
+{% block extra_css %}
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
     <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
@@ -31,8 +29,11 @@
             align-items: center;
         }
     </style>
-</head>
-<body>
+{% endblock %}
+
+{% block title %}Data Table{% endblock %}
+
+{% block content %}
     <h1>Form Data DataTable</h1>
     <a class="btn btn-success" style="float:left;margin-right:20px;" href="https://codepen.io/collection/XKgNLN/" target="_blank">Add New Data</a>
     <br>
@@ -74,8 +75,6 @@
         </div>
     </div>
 
-    <!--The JS position and order are very important!!!! -->
-    <!--TO get the progress bar render in the table, you must have the percentageBar.js -->
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
     <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/2.10.2/umd/popper.min.js"></script>
@@ -126,12 +125,12 @@
                     progressBarContainer.setAttribute("id", "progress-bar-" + row.id);
                     progressBarContainer.style.width = "100px";
                     progressBarContainer.style.height = "20px";
-    
+
                     // Append the progress bar container to the cell
                     var cell = this.node().querySelector('td:nth-child(5)');
                     cell.innerHTML = ''; // Clear cell content
                     cell.appendChild(progressBarContainer);
-    
+
                     // Use progressbar.js to render the progress bar
                     var progressBar = new ProgressBar.Line(progressBarContainer, {
                         strokeWidth: 2,
@@ -157,18 +156,18 @@
                         }
                         
                     });
-    
+
                     progressBar.animate(percentage / 100); // Set progress percentage
 
 
                 });
             }
-    
+
             // Event listener for DataTable draw event
             dataTable.on('draw.dt', function () {
                 renderProgressBars(); // Render progress bars after each draw event
             });
-    
+
             // Initial rendering of progress bars
             renderProgressBars();
 
@@ -195,9 +194,9 @@
                         $.each(row.data(), function(key, value) {
                             if (key === 'text_area') {
                                 childHtml += '<tr>' +
-                                             '<td><strong>' + key + '</strong></td>' +
-                                             '<td>' + value + '</td>' +
-                                             '</tr>';
+                                            '<td><strong>' + key + '</strong></td>' +
+                                            '<td>' + value + '</td>' +
+                                            '</tr>';
                             }
                         });
                         childHtml += '</table>';
@@ -270,13 +269,10 @@
                 // Hide the delete modal
                 $('#deleteModal').modal('hide');
             });
-
-            
-
-
         });
-
-        
     </script>
-</body>
-</html>
+{% endblock %}
+
+
+
+

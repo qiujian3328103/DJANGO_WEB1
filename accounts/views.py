@@ -354,6 +354,8 @@ def highchart_plot(request):
 def get_bin_groups_for_product(request):
     product_id = request.GET.get('product_id')
     bin_groups = BinDescription.objects.filter(PRODUCT_ID=product_id).values_list('BIN_GROUP', flat=True).distinct()
+    data = BinDescription.objects.filter(PRODUCT_ID=product_id).values()
+    print(data)
     return JsonResponse(list(bin_groups), safe=False)
 
 def get_data_highchart(request):
@@ -372,7 +374,7 @@ def get_data_highchart(request):
         print("test start cache")
         df_raw = get_filtered_data(product_id=product_id, start_date=start_date_str, end_date=end_date_str)
         cache.set(cache_key, df_raw, 3600)
-        print(df_raw)
+        # print(df_raw)
 
     if plot_type == "bar":
         # vertical bar plot 
@@ -409,7 +411,7 @@ def get_data_highchart(request):
     # Filter data based on date range
     filtered_data = df[(df['date'] >= start_date) & (df['date'] <= end_date)]
     
-    print(filtered_data.head(n=50))
+    # print(filtered_data.head(n=50))
     # based on the plot type to decide the plot 
     if plot_type == "bin_group":
         # select bin_group, use the bin_types_list to filter the the customer select bin_types 
@@ -462,7 +464,8 @@ def get_data_highchart(request):
             )
             .reset_index()
         )
-
+        
+        # filtered_data = filtered_data[filtered_data['bin_type'].isin(bin_types_list)]
         datatable_data = datatable_data.sort_values(by='current_date')
 
         chart_data = {
@@ -478,13 +481,19 @@ def get_data_for_table_modal(request):
     product_id = request.GET.get('product_id')
     start_date = request.GET.get('start_date')
     end_date = request.GET.get('end_date')
-    print(product_id, start_date, end_date)
+    bin_types = request.GET.get('bin_types')
+    if bin_types=='' or bin_types is None:
+        bin_types_list = ["YIELD"]
+    else:
+        bin_types_list = bin_types.split(",")
+    print(product_id, start_date, end_date, bin_types_list)
     # query the data from the datatable 
     data = YieldData.objects.filter(
         product_id=product_id,
+        bin_type = 'YIELD',
         date__range=[start_date, end_date]
     ).values() 
-
+    
     return JsonResponse(list(data), safe=False)
 
 
