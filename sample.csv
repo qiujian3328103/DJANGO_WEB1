@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 wafer_layout,ucs_die_x,ucs_die_y,ucs_flash_x,ucs_flash_y,ucs_die_in_flash_x,ucs_die_in_flash_y,ucs_die_origin_x,ucs_die_origin_y,sort_die_x,sort_die_y,sort_test_flag,wet_flash_x,wet_flash_y
 product,-21,-10,-7,-2,0,0,-160076.6,-85153.25,,,,1,3
 product,-21,-9,-7,-2,0,1,-160076.6,-78593.79,,,,1,3
@@ -1814,3 +1815,7 @@ product,23,6,7,1,2,1,159845.64,19798.11,42,18,P,15,6
 product,23,7,7,1,2,2,159845.64,26357.57,42,17,P,15,6
 product,23,8,7,1,2,3,159845.64,32917.03,42,16,P,15,6
 product,23,9,7,1,2,4,159845.64,39476.49,42,15,P,15,6
+=======
+wafer_layout,component_sk,ucs_die_x,ucs_die_y,ucs_flash_x,ucs_flash_y,ucs_die_in_flash_x,ucs_die_in_flash_y,ucs_die_origin_x,ucs_die_origin_y,ucs_flash_wafer_layout_sk,ucs_die_wafer_layout_sk,metrology17_site,sort_die_x,sort_die_y,sort_test_flag,wet_flash_x,wet_flash_y
+
+>>>>>>> a2b811e52ba32c4b5073b61b88afd180f350967c
