@@ -58,6 +58,7 @@ class BinDescription(models.Model):
     BIN_DESCRIPTION = models.CharField(max_length=255)
     BIN = models.CharField(max_length=8)
     BIN_GROUP = models.CharField(max_length=255)
+    COLOR = models.CharField(max_length=10)
     class Meta:
         db_table = "bin_description"
 

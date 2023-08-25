@@ -7,9 +7,8 @@
 <head>
     <title>{% block title %}Dashboard{% endblock %}</title>
     <!-- Bootstrap CSS link -->
-    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <!-- add bootstrap bundle for collapse and expand of sidebar -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
     
     <!-- <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script> -->
 
@@ -43,6 +42,8 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.2.13/dist/semantic.min.css">
     <link rel="stylesheet" href="{% static 'multiselect-02/css/style.css' %}">
+
+    <!-- <link rel="stylesheet" href="{% static 'css/select2.css' %}"> -->
     
     <style>
         /* css/sidebar.css */
@@ -56,6 +57,9 @@
             margin-left: auto; /* or whatever the width of your sidebar is, e.g., 250px */
         }
     </style>
+
+    <!-- <script src="{%static 'js/select2.js' %}"></script> -->
+
     {% block extra_css %}
     
     {% endblock %}

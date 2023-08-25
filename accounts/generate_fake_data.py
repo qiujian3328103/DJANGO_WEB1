@@ -10,11 +10,12 @@ def delete_table(table_name = "yield_data"):
     delete the table 
     """
     # Connect to the SQLite database (replace 'your_database.db' with your actual database file)
-    conn = sqlite3.connect(r'C:\Users\Jian Qiu\Dropbox\pythonprojects\django_web1\db.sqlite3')
+    # conn = sqlite3.connect(r'C:\Users\Jian Qiu\Dropbox\pythonprojects\django_web1\db.sqlite3')
+    conn = sqlite3.connect(r'/Users/JianQiu/Dropbox/pythonprojects/django_web1/db.sqlite3')
     cursor = conn.cursor()
 
     # Drop the table
-    query = f"DROP TABLE IF EXISTS {table_name};"
+    query = "DROP TABLE IF EXISTS {};".format(table_name)
     cursor.execute(query)
 
     # Commit the changes and close the connection
@@ -24,7 +25,7 @@ def delete_table(table_name = "yield_data"):
 
 def generate_fake_data():
     # Connect to the database
-    conn = sqlite3.connect(r'C:\Users\Jian Qiu\Dropbox\pythonprojects\django_web1\db.sqlite3')
+    conn = sqlite3.connect(r'/Users/JianQiu/Dropbox/pythonprojects/django_web1/db.sqlite3')
     c = conn.cursor()
 
     # Create the yield_data table if it doesn't exist
@@ -41,8 +42,8 @@ def generate_fake_data():
     # Generate and insert fake data
     fake = Faker()
     root_lot_ids = [fake.random_letter() + fake.random_letter() + fake.random_letter() + str(fake.random_number(digits=2)) for _ in range(600)]  # Generate 600 root_lot_ids
-    wafer_ids = [f'{i:02}' for i in range(1, 26)]
-    product_ids = ["product1", "product2", "product3"]
+    wafer_ids = ["%02d" % i for i in range(1, 26)]
+    product_ids = ["product_1", "product_2", "product_3"]
     bin_types = ["ATPG_INT", "ATPG_SAF", "IDDQ", "MBIST_HV", "MBIST_LV", "DC", "TDF", "YIELD", "CONTINUITY", "RX"]
 
     start_date = datetime(2023, 1, 1)
@@ -91,7 +92,9 @@ def generate_fake_data_product():
     
     """
 
-    conn = sqlite3.connect(r'C:\Users\Jian Qiu\Dropbox\pythonprojects\django_web1\db.sqlite3')
+    # conn = sqlite3.connect(r'C:\Users\Jian Qiu\Dropbox\pythonprojects\django_web1\db.sqlite3')
+    conn = sqlite3.connect(r'/Users/JianQiu/Dropbox/pythonprojects/django_web1/db.sqlite3')
+    
     # Create a cursor object to execute SQL commands
     cursor = conn.cursor()
 
@@ -104,7 +107,7 @@ def generate_fake_data_product():
     ''')
 
     # List of products to insert
-    product_list = ["product1", "product2", "product3", "product4", "product5"]
+    product_list = ["product_1", "product_2", "product_3", "product_4", "product_5"]
 
     # Insert the data into the table
     for product in product_list:
@@ -139,7 +142,11 @@ def create_bin_description_table(table_name):
 
 if __name__ == '__main__':
     # delete_table(table_name="yield_data")
-    # delete_table(table_name="yield_table")
-    # generate_fake_data()
+    delete_table(table_name="yield_data")
+    # delete_table(table_name="table_name")
+    
+    # delete_table(table_name="product_list")
+    generate_fake_data()
     # generate_fake_data_product()
-    create_bin_description_table('bin_description')
+    
+    # create_bin_description_table('bin_description')

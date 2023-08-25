@@ -583,7 +583,22 @@ def get_sparkline_data(request):
 
 
 def list_view(request):
-    return render(request, 'accounts/list.html')
+    # Fetch unique BIN_GROUP values
+    bin_groups = BinDescription.objects.values_list('BIN_GROUP', flat=True).distinct()
+
+    # Organize data
+    data = []
+    for group in bin_groups:
+        bins = BinDescription.objects.filter(BIN_GROUP=group).values('BIN', 'BIN_DESCRIPTION', 'COLOR')
+        data.append({
+            'group': group,
+            'bins': list(bins)
+        })
+
+    context = {
+        'data': data
+    }
+    return render(request, 'accounts/list.html', context=context)
 
     # wafer_data = df[['left', 'right', 'bottom', 'top', 'color']].to_dict(orient='records')
     # df = df.head(n=1200)

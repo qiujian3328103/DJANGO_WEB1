@@ -35,6 +35,7 @@ function updateBinTypeOptions() {
       .then(data => {
           binType.innerHTML = "";  // Clear current options
           data.forEach(binGroup => {
+              console.log(binGroup);
               var option = document.createElement("option");
               option.value = binGroup;
               option.text = binGroup;

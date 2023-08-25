@@ -7,6 +7,8 @@
  {% load static %}
  
  {% block extra_css %}
+<!-- <link rel="stylesheet" href="{% static 'css/bstreeview.css' %}"> -->
+
  <style>
         .list-item {
             display: flex;
@@ -76,6 +78,23 @@
         .tree-view .expanded .children {
             display: block;
         }
+        .scrollable-card {
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+        .clickable-text:hover {
+            background-color: #e0e0e0;  /* Light gray background */
+            cursor: pointer;  /* Change the cursor to a hand pointer */
+        }
+        .highlighted {
+            background-color: #e0e0e0;  /* Light gray background */
+        }
+        .flex-text {
+            min-width: 0; /*avoid the text too long and icon not show*/
+        }
+        [data-bs-toggle="collapse"], .clickable-text {
+            font-size: 12px;
+        }
  </style>
  {% endblock %}
  
@@ -98,75 +117,107 @@
            </div>
          </div>
 
-        <div class="tree-view">
-            <ul>
-                <li class="node" onclick="toggleNode(this)">
-                    <div class="node-content">
-                        <div class="triangle"></div>
-                        <div class="icon"></div>
-                        <div class="name">Item 1</div>
-                        <div class="value">Value 1</div>
-                    </div>
-                    <ul class="children">
-                        <li class="node">
-                            <div class="node-content">
-                                <div class="icon"></div>
-                                <div class="name">Subitem 1.1</div>
-                                <div class="value">Value 1.1</div>
-                            </div>
-                        </li>
-                        <li class="node">
-                            <div class="node-content">
-                                <div class="icon"></div>
-                                <div class="name">Subitem 1.1</div>
-                                <div class="value">Value 1.1</div>
-                            </div>
-                        </li>
-                        <li class="node">
-                            <div class="node-content">
-                                <div class="icon"></div>
-                                <div class="name">Subitem 1.2</div>
-                                <div class="value">Value 1.1</div>
-                            </div>
-                        </li>
-                        <li class="node">
-                            <div class="node-content">
-                                <div class="icon"></div>
-                                <div class="name">Subitem 1.2</div>
-                                <div class="value">Value 1.1</div>
-                            </div>
-                        </li>
-                        <!-- Add more subitems as needed -->
-                    </ul>
-                </li>
-                <!-- Add more main items as needed -->
-            </ul>
-        </div>
+         <div class="card" style="width: 40%;">
+            <div class="card-header">
+                Bin Type List
+            </div>
+            <div class="card-body scrollable-card" >
+                <ul class="list-unstyled">
+                    <li class="mb-2">
+                        <div class="d-flex align-items-center">
+                            <div class="me-2" style="width: 20px; height: 20px; background-color: red;"></div>
+                            <a data-bs-toggle="collapse" href="#collapseExample1" role="button" aria-expanded="false" class="clickable-text">
+                                Father Item 1
+                            </a>
+                        </div>
+                        <ul class="list-unstyled collapse" id="collapseExample1">
+                            <li class="ms-4 my-2">
+                                <div class="d-flex align-items-center">
+                                    <div class="me-2" style="width: 20px; height: 20px; background-color: blue;"></div>
+                                    <div class="clickable-text flex-text">Child Item 1 test why it difff piereaed </div>
+                                </div>
+                            </li>
+                            <li class="ms-4 my-2">
+                                <div class="d-flex align-items-center">
+                                    <div class="me-2" style="width: 20px; height: 20px; background-color: green;"></div>
+                                    <div class="clickable-text flex-text">Child Item 2</div>
+                                </div>
+                            </li>
+                            <li class="ms-4 my-2">
+                                <div class="d-flex align-items-center">
+                                    <div class="me-2" style="width: 20px; height: 20px; background-color: green;"></div>
+                                    <div class="clickable-text flex-text">Child Item 2</div>
+                                </div>
+                            </li>
+                            <li class="ms-4 my-2">
+                                <div class="d-flex align-items-center">
+                                    <div class="me-2" style="width: 20px; height: 20px; background-color: green;"></div>
+                                    <div class="clickable-text flex-text">Child Item 2</div>
+                                </div>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+         </div>
 
      </div>
- 
-  
- 
-     <!-- Mutliselect import the mutli select dorpdown widget  -->
-     <script>
-        // function toggleSubItems(element) {
-        //     const subItems = element.querySelector('.sub-items');
-        //     if (subItems.style.display === 'none') {
-        //         subItems.style.display = 'block';
-        //     } else {
-        //         subItems.style.display = 'none';
-        //     }
-        // }
 
-        function toggleNode(element) {
-            if (element.classList.contains('expanded')) {
-                element.classList.remove('expanded');
+     <div class="card" style="width: 40%;">
+        <div class="card-header">
+            Bin Type List
+        </div>
+        <div class="card-body scrollable-card" >
+            <div class="tree-view">
+                <ul>
+                    {% for item in data %}
+                        <li class="mb-2">
+                            <div class="d-flex align-items-center">
+                                <div class="me-2" style="width: 20px; height: 20px; background-color: {{ item.bins.0.COLOR }};"></div>
+                                <a data-bs-toggle="collapse" href="#collapse{{ forloop.counter }}" role="button" aria-expanded="false">
+                                    {{ item.group }}
+                                </a>
+                            </div>
+                            <ul class="list-unstyled collapse" id="collapse{{ forloop.counter }}">
+                                {% for bin in item.bins %}
+                                    <li class="ms-4 my-2">
+                                        <div class="d-flex align-items-center">
+                                            <div class="me-2" style="width: 20px; height: 20px; background-color: {{ bin.COLOR }};"></div>
+                                            <div class="clickable-text flex-text">{{ bin.BIN_DESCRIPTION }} {{ bin.BIN }}</div>
+                                        </div>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>  
+        </div>
+
+
+    <script>
+        document.querySelector('[data-bs-toggle="collapse"]').addEventListener('click', function() {
+            console.log("clicked");
+            var content = document.querySelector('#collapseExample1');
+            if (content.classList.contains('show')) {
+                content.classList.remove('show');
             } else {
-                element.classList.add('expanded');
+                content.classList.add('show');
             }
-        }
+        });
+
+        // Get all elements with the class 'clickable-text'
+        const clickableItems = document.querySelectorAll('.clickable-text');
+
+        // Add a click event listener to each item
+        clickableItems.forEach(item => {
+            item.addEventListener('click', function() {
+                console.log(this.textContent);  // Log the text content of the clicked item
+                this.classList.toggle('highlighted');
+            });
+        });
     </script>
- 
+
  {% endblock %}
  
 
