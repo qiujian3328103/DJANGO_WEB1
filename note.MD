@@ -15,11 +15,11 @@ Basically in your app dir, there's an apps.py file which has a class named *YOUR
   <script src="{% static 'select2/js/jquery.slim.min.js' %}"></script>
   <script src="{% static 'select2/js/bootstrap.bundle.min.js' %}"></script>
   <script src="{% static 'select2/js/select2.full.min.js' %}"></script>
-                        <select class="form-select" id="productID" data-placeholder="Choose one thing">
-                            {% for process_id in unique_process_list %}
-                                <option value="{{ process_id }}">{{process_id}}</option>
-                            {% endfor %}
-                        </select>
+  <select class="form-select" id="productID" data-placeholder="Choose one thing">
+      {% for process_id in unique_process_list %}
+          <option value="{{ process_id }}">{{process_id}}</option>
+      {% endfor %}
+  </select>
 
         $( '#productID' ).select2( {
             theme: "bootstrap-5",
